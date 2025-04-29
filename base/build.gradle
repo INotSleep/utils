@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+}
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+}
+
+repositories {
+    maven {
+        name = "papermc-repo"
+        url = "https://repo.papermc.io/repository/maven-public/"
+    }
+}
+
+dependencies {
+    compileOnly "com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT"
+}
+

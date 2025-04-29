@@ -1,0 +1,141 @@
+plugins {
+    id 'java'
+    id "com.gradleup.shadow" version "9.0.0-beta11"
+    id 'maven-publish'
+}
+
+group = 'me.inotsleep'
+version = '1.1.2'
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "papermc-repo"
+        url = "https://repo.papermc.io/repository/maven-public/"
+    }
+    maven {
+        name = "sonatype"
+        url = "https://oss.sonatype.org/content/groups/public/"
+    }
+    maven {
+        url "https://repo.codemc.io/repository/maven-public/"
+    }
+    maven {
+        url = "https://jitpack.io/"
+    }
+    maven {
+        url = "https://hub.spigotmc.org/nexus/content/groups/public/"
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+}
+dependencies {
+    implementation("org.bstats:bstats-bukkit:3.0.2")
+    implementation('org.snakeyaml:snakeyaml-engine:2.9')
+    implementation(project(":base")) {
+        attributes {
+            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 8)
+        }
+    }
+
+    implementation(project(":1_21_4")) {
+        attributes {
+            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 21)
+        }
+    }
+
+}
+
+
+allprojects {
+    apply plugin: 'java'
+
+    repositories {
+        mavenCentral()
+        maven {
+            name = "papermc-repo"
+            url = "https://repo.papermc.io/repository/maven-public/"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/groups/public/"
+        }
+        maven {
+            url "https://repo.codemc.io/repository/maven-public/"
+        }
+        maven {
+            url = "https://jitpack.io/"
+        }
+        maven {
+            url = "https://hub.spigotmc.org/nexus/content/groups/public/"
+        }
+    }
+
+    dependencies {
+        compileOnly "org.xerial:sqlite-jdbc:3.43.2.1"
+        compileOnly "com.google.guava:guava:12+"
+        compileOnly 'me.filoghost.holographicdisplays:holographicdisplays-api:3.0.0'
+        compileOnly "com.github.decentsoftware-eu:decentholograms:2.8.9"
+
+        implementation("org.bstats:bstats-bukkit:3.0.2")
+        implementation('org.snakeyaml:snakeyaml-engine:2.9')
+    }
+}
+
+shadowJar {
+    archiveFileName.set("utils-${version}.jar")
+    setArchiveClassifier(null)
+
+    relocate("org.bstats", "me.inotsleep.utils.relocated.org.bstats")
+    relocate("org.snakeyaml", "me.inotsleep.utils.relocated.org.snakeyaml")
+}
+
+def targetJavaVersion = 8
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release = targetJavaVersion
+    }
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
+    }
+}
+
+publishing {
+    publications {
+        shadow(MavenPublication) {
+            artifact shadowJar
+
+            groupId = project.group
+            artifactId = "utils"
+            version = project.version
+        }
+    }
+
+    repositories {
+        maven {
+            name = "inotsleep-nexus"
+            url = uri("https://nexus.inotsleep.com/repository/maven-releases/")
+            credentials {
+                username = System.getenv("NEXUS_USER")
+                password = System.getenv("NEXUS_PASSWORD")
+            }
+        }
+    }
+}

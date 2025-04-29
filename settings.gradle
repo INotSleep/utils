@@ -1,0 +1,16 @@
+pluginManagement {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots"
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = 'utils'
+include("base")
+include("1_21_4")
