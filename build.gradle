@@ -137,5 +137,14 @@ publishing {
                 password = System.getenv("NEXUS_PASSWORD")
             }
         }
+
+        maven {
+            name = "l0styru-nexus"
+            url = uri("https://repo.l0sty.ru/releases/")
+            credentials {
+                username = System.getenv("L0STYRU_NEXUS_USER")
+                password = System.getenv("L0STYRU_NEXUS_PASSWORD")
+            }
+        }
     }
 }
