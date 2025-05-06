@@ -10,39 +10,39 @@ public class StorageSettings extends SerializableObject {
     @Comment(" ")
     @Comment("Available types: SQLITE, MYSQL")
     @Path("storageType")
-    public StorageType type;
+    public StorageType type = StorageType.SQLITE;
 
     @Comment("File name for SQLite database")
     @Path("sqliteFile")
-    public String sqliteFileName;
+    public String sqliteFileName = "database.db";
 
     @Comment("Host of MySQL database")
     @Path("host")
-    public String host;
+    public String host = "localhost";
 
     @Comment("Port of MySQL database")
     @Path("port")
-    public String port;
+    public String port = "3306";
 
     @Comment("Database name")
     @Path("database")
-    public String database;
+    public String database = "my_database";
 
     @Comment("Password for MySQL database")
     @Path("password")
-    public String password;
+    public String password = "veryStrongPassword";
 
     @Comment("Username for MySQL database")
     @Path("username")
-    public String username;
+    public String username = "username";
 
     @Comment("Connection options")
-    @Path("password")
-    public String options;
+    @Path("options")
+    public String options = "autoReconnect=true&useSSL=false;";
 
     @Comment("Table prefix")
     @Path("tablePrefix")
-    public String tablePrefix;
+    public String tablePrefix = "";
 
     public enum StorageType {
         SQLITE, MYSQL;
