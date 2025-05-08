@@ -2,6 +2,7 @@ package me.inotsleep.utils.storage.connection;
 
 import me.inotsleep.utils.storage.StorageSettings;
 
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -12,10 +13,10 @@ public interface BaseConnection {
     int executeUpdate(String query, Object... params) throws SQLException;
     boolean isConnected();
 
-    static BaseConnection createConnection(StorageSettings settings) throws SQLException {
+    static BaseConnection createConnection(StorageSettings settings, File basePath) throws SQLException {
         switch (settings.type) {
             case SQLITE:
-                return new SQLiteConnection(settings);
+                return new SQLiteConnection(settings, basePath);
             case MYSQL:
                 return new MySQLConnection(settings);
             default:

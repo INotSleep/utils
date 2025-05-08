@@ -2,14 +2,20 @@ package me.inotsleep.utils.storage.connection;
 
 import me.inotsleep.utils.storage.StorageSettings;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.*;
 
 class SQLiteConnection implements BaseConnection {
     private Connection connection;
     private final String url;
 
-    public SQLiteConnection(StorageSettings settings) {
-        this.url = "jdbc:sqlite:" + settings.sqliteFileName;
+    public SQLiteConnection(StorageSettings settings, File basePath) {
+        try {
+            this.url = "jdbc:sqlite:" + new File(basePath, settings.sqliteFileName).getCanonicalPath();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
