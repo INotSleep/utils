@@ -6,8 +6,8 @@ public class SLF4JLogger implements ILogger{
     private static final Level DEFAULT_LEVEL = Level.INFO;
     private final Logger logger;
 
-    public SLF4JLogger(Logger logger) {
-        this.logger = logger;
+    public SLF4JLogger(Object logger) {
+        this.logger = (Logger) logger;
     }
 
     @Override
@@ -25,14 +25,19 @@ public class SLF4JLogger implements ILogger{
         switch (level) {
             case TRACE:
                 logger.trace(message);
+                break;
             case DEBUG:
                 logger.debug(message);
+                break;
             case INFO:
                 logger.info(message);
+                break;
             case WARN:
                 logger.warn(message);
+                break;
             case ERROR:
                 logger.error(message);
+                break;
         }
     }
 
@@ -41,14 +46,19 @@ public class SLF4JLogger implements ILogger{
         switch (level) {
             case TRACE:
                 logger.trace(message, throwable);
+                break;
             case DEBUG:
                 logger.debug(message, throwable);
+                break;
             case INFO:
                 logger.info(message, throwable);
+                break;
             case WARN:
                 logger.warn(message, throwable);
+                break;
             case ERROR:
                 logger.error(message, throwable);
+                break;
         }
     }
 

@@ -1,7 +1,6 @@
 package me.inotsleep.utils;
 
 import me.inotsleep.utils.hooks.Initializer;
-import me.inotsleep.utils.hooks.holograms.HologramAPI;
 import me.inotsleep.utils.listeners.EventListener;
 import me.inotsleep.utils.logging.LoggingManager;
 import org.bstats.bukkit.Metrics;
@@ -14,7 +13,6 @@ import java.lang.reflect.Field;
 public abstract class AbstractPlugin<T extends AbstractPlugin<T>> extends JavaPlugin {
     private static AbstractPlugin<?> instance;
     public static CommandMap commandMap;
-    private static HologramAPI hologramAPI;
     public static Metrics metrics;
 
     @Override
@@ -26,8 +24,7 @@ public abstract class AbstractPlugin<T extends AbstractPlugin<T>> extends JavaPl
             AbstractPlugin.commandMap = (CommandMap)bukkitCommandMap.get(Bukkit.getServer());
         }
         catch (final IllegalAccessException | NoSuchFieldException e) {
-            this.getLogger().severe("Cannot access CommandMap. Contact me in github!");
-            e.printStackTrace();
+            LoggingManager.error("Failed to get command map.", e);
             Bukkit.getPluginManager().disablePlugin(this);
         }
         instance = this;
@@ -38,10 +35,6 @@ public abstract class AbstractPlugin<T extends AbstractPlugin<T>> extends JavaPl
 
     public static void disablePlugin() {
         Bukkit.getPluginManager().disablePlugin(instance);
-    }
-    public static void printError(String string, boolean disable) {
-        LoggingManager.error(string);
-        if (disable) disablePlugin();
     }
 
     @Override

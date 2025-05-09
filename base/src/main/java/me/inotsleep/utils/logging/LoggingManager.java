@@ -12,18 +12,16 @@ public class LoggingManager {
     }
 
     public static void setLogger(final Object logger) {
-        switch (logger.getClass().getName()) {
-            case "org.apache.logging.log4j.Logger": {
-                setLogger(instantiateWrapper("me.inotsleep.utils.logging.ApacheLog4JLogger", logger));
-                break;
-            }
-            case "java.util.logging.Logger": {
-                setLogger(new JavaLogger((Logger) logger));
-                break;
-            }
-            case "org.slf4j.Logger": {
-                setLogger(instantiateWrapper("me.inotsleep.utils.logging.SLF4JLogger", logger));
-            }
+        if (logger.getClass().getName().contains("slf4j") && logger.getClass().getName().contains("Log")) {
+            setLogger(instantiateWrapper("me.inotsleep.utils.logging.SLF4JLogger", logger));
+        }
+
+        if (logger.getClass().getName().contains("log4j") && logger.getClass().getName().contains("Log")) {
+            setLogger(instantiateWrapper("me.inotsleep.utils.logging.ApacheLog4JLogger", logger));
+        }
+
+        if (logger.getClass().getName().contains("java.util.logging.Logger")) {
+            setLogger(new JavaLogger((Logger) logger));
         }
 
     }
@@ -44,7 +42,7 @@ public class LoggingManager {
                     LoggingManager.class.getClassLoader()
             );
 
-            Constructor<?> ctor = wrapperClass.getConstructor(delegate.getClass());
+            Constructor<?> ctor = wrapperClass.getConstructor(Object.class);
             Object instance = ctor.newInstance(delegate);
 
             return (T) instance;
@@ -54,7 +52,6 @@ public class LoggingManager {
                  | InstantiationException
                  | IllegalAccessException
                  | LinkageError e) {
-            // если не нашли класс-обёртку или при линковке упало — возвращаем null
             return null;
         }
     }
