@@ -1,14 +1,14 @@
 package me.inotsleep.utils.hooks.itemdisplay;
 
-import me.inotsleep.utils.LoggerFactory;
 import me.inotsleep.utils.Pair;
+import me.inotsleep.utils.logging.LoggingManager;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 public class UnsupportedDisplayWrapper implements BaseDisplayWrapper {
     public UnsupportedDisplayWrapper() {
-        LoggerFactory.getLogger().warning("Plugin tried to create Item/BlockDisplay while your server not supporting this! Consider to update to 1.19.4 or never!");
+        LoggingManager.warn("Plugin tried to create Item/BlockDisplay while your server not supporting this! Consider to update to 1.19.4 or never!");
     }
 
     @Override

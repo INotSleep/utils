@@ -1,6 +1,6 @@
 package me.inotsleep.utils.config;
 
-import me.inotsleep.utils.LoggerFactory;
+import me.inotsleep.utils.logging.LoggingManager;
 import org.snakeyaml.engine.v2.api.*;
 import org.snakeyaml.engine.v2.common.FlowStyle;
 import org.snakeyaml.engine.v2.composer.Composer;
@@ -9,10 +9,8 @@ import org.snakeyaml.engine.v2.parser.ParserImpl;
 import org.snakeyaml.engine.v2.scanner.StreamReader;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.logging.Level;
 
 public abstract class AbstractConfig extends SerializableObject {
     File configFile;
@@ -24,16 +22,16 @@ public abstract class AbstractConfig extends SerializableObject {
     public void reload() {
         if (!configFile.getParentFile().exists()) {
             if (!configFile.getParentFile().mkdirs()) {
-                LoggerFactory.getLogger().severe("Unable to create directory: " + configFile.getParentFile());
+                LoggingManager.error("Unable to create directory: " + configFile.getParentFile());
             }
         }
 
         if (!configFile.exists()) {
-            LoggerFactory.getLogger().info("Configuration file " + configFile.getName() + " does not exist. Creating...");
+            LoggingManager.info("Configuration file " + configFile.getName() + " does not exist. Creating...");
             try {
                 configFile.createNewFile();
             } catch (IOException e) {
-                LoggerFactory.getLogger().log(Level.SEVERE, "Unable to create configuration file: " + configFile.getName(), e);
+                LoggingManager.error( "Unable to create configuration file: " + configFile.getName(), e);
                 return;
             }
             save();
@@ -56,7 +54,7 @@ public abstract class AbstractConfig extends SerializableObject {
 
             deserialize(rootNode);
         } catch (IOException e) {
-            LoggerFactory.getLogger().log(Level.SEVERE, "Unable to read configuration file: " + configFile.getName(), e);
+            LoggingManager.error( "Unable to read configuration file: " + configFile.getName(), e);
         }
     }
 
@@ -65,16 +63,16 @@ public abstract class AbstractConfig extends SerializableObject {
     public void save() {
         if (!configFile.getParentFile().exists()) {
             if (!configFile.getParentFile().mkdirs()) {
-                LoggerFactory.getLogger().severe("Unable to create directory: " + configFile.getParentFile());
+                LoggingManager.error("Unable to create directory: " + configFile.getParentFile());
             }
         }
 
         if (!configFile.exists()) {
-            LoggerFactory.getLogger().info("Configuration file " + configFile.getName() + " does not exist. Creating...");
+            LoggingManager.error("Configuration file " + configFile.getName() + " does not exist. Creating...");
             try {
                 configFile.createNewFile();
             } catch (IOException e) {
-                LoggerFactory.getLogger().log(Level.SEVERE, "Unable to create configuration file: " + configFile.getName(), e);
+                LoggingManager.error("Unable to create configuration file: " + configFile.getName(), e);
                 return;
             }
         }
@@ -95,11 +93,11 @@ public abstract class AbstractConfig extends SerializableObject {
             dump.dumpNode(root, new YamlOutputStreamWriter(fileStream, StandardCharsets.UTF_8) {
                 @Override
                 public void processIOException(IOException e) {
-                    LoggerFactory.getLogger().log(Level.SEVERE, "Unable to save configuration file: ", e);
+                    LoggingManager.error("Unable to save configuration file: ", e);
                 }
             });
         }  catch (IOException e) {
-            LoggerFactory.getLogger().log(Level.SEVERE, "Unable to save configuration file: ", e);
+            LoggingManager.error("Unable to save configuration file: ", e);
         }
     }
 }

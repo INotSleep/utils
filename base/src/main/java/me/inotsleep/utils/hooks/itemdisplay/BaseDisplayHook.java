@@ -1,15 +1,12 @@
 package me.inotsleep.utils.hooks.itemdisplay;
 
 import me.inotsleep.utils.AbstractPlugin;
-import me.inotsleep.utils.LoggerFactory;
 import me.inotsleep.utils.hooks.base.BaseHook;
-import org.bukkit.Bukkit;
+import me.inotsleep.utils.logging.LoggingManager;
 import org.bukkit.Location;
-import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
 
 public interface BaseDisplayHook extends BaseHook {
     AtomicReference<BaseDisplayHook> instance = new AtomicReference<>();
@@ -19,7 +16,7 @@ public interface BaseDisplayHook extends BaseHook {
             if (supported) instance.set((BaseDisplayHook) AbstractPlugin.getAbstractInstance().getClass().getClassLoader().loadClass("me.inotsleep.utils.hooks.itemdisplay.DisplayHook").getConstructor().newInstance());
         } catch (ClassNotFoundException | InvocationTargetException | InstantiationException | IllegalAccessException |
                  NoSuchMethodException e) {
-            LoggerFactory.getLogger().log(Level.SEVERE, "Unable to load class of DisplayHook. Is plugin corrupt?", e);
+            LoggingManager.error("Unable to load class of DisplayHook.", e);
         }
         if (instance.get() == null) instance.set(new UnsupportedDisplayHook());
     }

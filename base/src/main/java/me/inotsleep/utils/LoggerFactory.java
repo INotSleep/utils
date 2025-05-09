@@ -1,15 +1,17 @@
 package me.inotsleep.utils;
 
+import me.inotsleep.utils.logging.ILogger;
+import me.inotsleep.utils.logging.LoggingManager;
+
 import java.util.logging.Logger;
 
+@Deprecated
 public class LoggerFactory {
-    private static Logger logger;
-
-    public static Logger getLogger() {
-        return logger;
+    public static ILogger getLogger() {
+        return LoggingManager.getLogger();
     }
 
     public static void setLogger(Logger logger) {
-        LoggerFactory.logger = logger;
+        LoggingManager.setLogger(logger);
     }
 }

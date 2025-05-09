@@ -3,6 +3,7 @@ package me.inotsleep.utils;
 import me.inotsleep.utils.hooks.Initializer;
 import me.inotsleep.utils.hooks.holograms.HologramAPI;
 import me.inotsleep.utils.listeners.EventListener;
+import me.inotsleep.utils.logging.LoggingManager;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
@@ -18,7 +19,7 @@ public abstract class AbstractPlugin<T extends AbstractPlugin<T>> extends JavaPl
 
     @Override
     public void onEnable() {
-        LoggerFactory.setLogger(getLogger());
+        LoggingManager.setLogger(getLogger());
         try {
             final Field bukkitCommandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
             bukkitCommandMap.setAccessible(true);
@@ -39,7 +40,7 @@ public abstract class AbstractPlugin<T extends AbstractPlugin<T>> extends JavaPl
         Bukkit.getPluginManager().disablePlugin(instance);
     }
     public static void printError(String string, boolean disable) {
-        LoggerFactory.getLogger().severe(string);
+        LoggingManager.error(string);
         if (disable) disablePlugin();
     }
 

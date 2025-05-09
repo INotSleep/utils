@@ -1,8 +1,8 @@
 package me.inotsleep.utils.hooks.holograms;
 
 import me.inotsleep.utils.AbstractPlugin;
-import me.inotsleep.utils.LoggerFactory;
 import me.inotsleep.utils.hooks.base.BaseHook;
+import me.inotsleep.utils.logging.LoggingManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.plugin.Plugin;
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public interface HologramAPI extends BaseHook {
     AtomicReference<HologramAPI> instance = new AtomicReference<>(null);
     static void init() {
-        LoggerFactory.getLogger().info("Initializing HologramAPI");
+        LoggingManager.info("Initializing HologramAPI");
 
         if (Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays")) instance.set(new HolographicDisplaysHologramAPI(AbstractPlugin.getAbstractInstance()));
         else if (Bukkit.getPluginManager().isPluginEnabled("DecentHolograms")) instance.set(new DecentHologramsHologramAPI(AbstractPlugin.getAbstractInstance()));

@@ -1,6 +1,6 @@
 package me.inotsleep.utils.config;
 
-import me.inotsleep.utils.LoggerFactory;
+import me.inotsleep.utils.logging.LoggingManager;
 import org.snakeyaml.engine.v2.comments.CommentLine;
 import org.snakeyaml.engine.v2.comments.CommentType;
 import org.snakeyaml.engine.v2.common.FlowStyle;
@@ -10,7 +10,6 @@ import org.snakeyaml.engine.v2.nodes.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public abstract class SerializableObject {
@@ -39,7 +38,7 @@ public abstract class SerializableObject {
             try {
                 fieldValue = field.get(this);
             } catch (IllegalAccessException e) {
-                LoggerFactory.getLogger().log(Level.SEVERE, "Unable to access field value", e);
+                LoggingManager.error("Unable to access field value", e);
                 continue;
             }
             if (fieldValue == null) {
@@ -88,7 +87,7 @@ public abstract class SerializableObject {
                     field.set(this, deserialized);
                 }
             } catch (IllegalAccessException e) {
-                LoggerFactory.getLogger().log(Level.SEVERE, "Unable to set field value", e);
+                LoggingManager.error("Unable to set field value", e);
             }
         }
 
@@ -206,7 +205,7 @@ public abstract class SerializableObject {
     private Object deserializeFieldByType(Class < ? > type, java.lang.reflect.Type genericType, Node node, String key) {
         if (SerializableObject.class.isAssignableFrom(type)) {
             if (!(node instanceof MappingNode)) {
-                LoggerFactory.getLogger().warning("Expected MappingNode for object '" + key + "' but found " + node.getNodeType());
+                LoggingManager.warn("Expected MappingNode for object '" + key + "' but found " + node.getNodeType());
                 return null;
             }
             return deserializeObject((MappingNode) node, type, key);
@@ -214,7 +213,7 @@ public abstract class SerializableObject {
 
         if (Map.class.isAssignableFrom(type)) {
             if (!(node instanceof MappingNode)) {
-                LoggerFactory.getLogger().warning("Expected MappingNode for map '" + key + "' but found " + node.getNodeType());
+                LoggingManager.warn("Expected MappingNode for map '" + key + "' but found " + node.getNodeType());
                 return null;
             }
             return deserializeMap((MappingNode) node, genericType);
@@ -222,7 +221,7 @@ public abstract class SerializableObject {
 
         if (Collection.class.isAssignableFrom(type)) {
             if (!(node instanceof SequenceNode)) {
-                LoggerFactory.getLogger().warning("Expected SequenceNode for collection '" + key + "' but found " + node.getNodeType());
+                LoggingManager.warn("Expected SequenceNode for collection '" + key + "' but found " + node.getNodeType());
                 return null;
             }
             return deserializeCollection((SequenceNode) node, genericType);
@@ -230,7 +229,7 @@ public abstract class SerializableObject {
 
         if (type.isEnum()) {
             if (!(node instanceof ScalarNode)) {
-                LoggerFactory.getLogger().warning("Expected ScalarNode for enum '" + key + "' but found " + node.getNodeType());
+                LoggingManager.warn("Expected ScalarNode for enum '" + key + "' but found " + node.getNodeType());
                 return null;
             }
             return deserializeEnum(type, (ScalarNode) node);
@@ -243,13 +242,13 @@ public abstract class SerializableObject {
                 type.equals(Boolean.class)) {
 
             if (!(node instanceof ScalarNode)) {
-                LoggerFactory.getLogger().warning("Expected ScalarNode for primitive '" + key + "' but found " + node.getNodeType());
+                LoggingManager.warn("Expected ScalarNode for primitive '" + key + "' but found " + node.getNodeType());
                 return null;
             }
             return deserializePrimitive(type, (ScalarNode) node);
         }
 
-        LoggerFactory.getLogger().warning("Unsupported field type: " + type.getName() + ". Will treat as string.");
+        LoggingManager.warn("Unsupported field type: " + type.getName() + ". Will treat as string.");
         if (node instanceof ScalarNode) {
             return ((ScalarNode) node).getValue();
         }
@@ -262,7 +261,7 @@ public abstract class SerializableObject {
             obj.deserialize(node);
             return obj;
         } catch (Exception e) {
-            LoggerFactory.getLogger().log(Level.SEVERE, "Failed to deserialize object for '" + key + "'", e);
+            LoggingManager.error("Failed to deserialize object for '" + key + "'", e);
         }
         return null;
     }
@@ -330,7 +329,7 @@ public abstract class SerializableObject {
         try {
             return Enum.valueOf((Class < Enum > ) enumType, value);
         } catch (IllegalArgumentException ex) {
-            LoggerFactory.getLogger().warning("Invalid enum value '" + value + "' for enum " + enumType.getName());
+            LoggingManager.warn("Invalid enum value '" + value + "' for enum " + enumType.getName());
             return null;
         }
     }
@@ -367,7 +366,7 @@ public abstract class SerializableObject {
                 return Double.parseDouble(value);
             }
         } catch (NumberFormatException e) {
-            LoggerFactory.getLogger().warning("Invalid numeric value '" + value + "' for type " + type.getName());
+            LoggingManager.warn("Invalid numeric value '" + value + "' for type " + type.getName());
             return null;
         }
 
