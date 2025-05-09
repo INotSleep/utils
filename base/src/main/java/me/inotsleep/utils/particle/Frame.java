@@ -3,6 +3,7 @@ package me.inotsleep.utils.particle;
 import me.inotsleep.utils.AbstractPlugin;
 import me.inotsleep.utils.config.Path;
 import me.inotsleep.utils.config.SerializableObject;
+import me.inotsleep.utils.logging.LoggingManager;
 import me.inotsleep.utils.particle.compiler.CubicBezierTransition;
 
 import java.util.Map;
@@ -24,7 +25,8 @@ public class Frame extends SerializableObject {
         this.duration = duration;
         this.transition = new CubicBezierTransition(transition);
         if (duration < 0) {
-            AbstractPlugin.printError("Duration of frame must be above 0! Please recheck your configuration", false);
+            LoggingManager.error("Duration of frame must be above 0! Please recheck your configuration");
+            duration = 1;
         }
     }
 
