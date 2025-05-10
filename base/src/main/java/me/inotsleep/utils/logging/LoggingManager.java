@@ -20,7 +20,10 @@ public class LoggingManager {
             setLogger(instantiateWrapper("me.inotsleep.utils.logging.ApacheLog4JLogger", logger));
         }
 
-        if (logger.getClass().getName().contains("java.util.logging.Logger")) {
+        if (
+                logger.getClass().getName().contains("java.util.logging.Logger") ||
+                logger.getClass().getName().contains("com.destroystokyo.paper.utils.PaperPluginLogger")
+        ) {
             setLogger(new JavaLogger((Logger) logger));
         }
 

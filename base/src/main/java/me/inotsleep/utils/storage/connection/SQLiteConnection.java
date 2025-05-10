@@ -47,6 +47,11 @@ class SQLiteConnection implements BaseConnection {
     }
 
     @Override
+    public DatabaseMetaData getMetaData() throws SQLException {
+        return connection.getMetaData();
+    }
+
+    @Override
     public boolean isConnected() {
         try {
             return connection != null && !connection.isClosed();
