@@ -1,18 +1,16 @@
 package me.inotsleep.utils.hooks.holograms;
 
 import eu.decentsoftware.holograms.api.DHAPI;
-import me.inotsleep.utils.AbstractPlugin;
-import me.inotsleep.utils.events.HookInitEvent;
+import me.inotsleep.utils.AbstractBukkitPlugin;
 import me.inotsleep.utils.hooks.Initializer;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.util.List;
 import java.util.UUID;
 
 public class DecentHologramsHologramAPI implements HologramAPI {
-    private final AbstractPlugin<?> plugin;
-    public DecentHologramsHologramAPI(AbstractPlugin<?> plugin) {
+    private final AbstractBukkitPlugin<?> plugin;
+    public DecentHologramsHologramAPI(AbstractBukkitPlugin<?> plugin) {
         Initializer.callInitEvent(this);
         this.plugin = plugin;
     }

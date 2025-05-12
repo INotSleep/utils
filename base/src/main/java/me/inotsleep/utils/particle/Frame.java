@@ -1,6 +1,5 @@
 package me.inotsleep.utils.particle;
 
-import me.inotsleep.utils.AbstractPlugin;
 import me.inotsleep.utils.config.Path;
 import me.inotsleep.utils.config.SerializableObject;
 import me.inotsleep.utils.logging.LoggingManager;

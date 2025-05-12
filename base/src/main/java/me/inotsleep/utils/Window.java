@@ -12,7 +12,7 @@ import java.lang.reflect.*;
 public class Window implements Listener {
     public Inventory inventory;
 
-    public Window(AbstractPlugin<?> plugin) {
+    public Window(AbstractBukkitPlugin<?> plugin) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
@@ -31,7 +31,7 @@ public class Window implements Listener {
                     try {
                         ((HandlerList) classMethod.invoke(null)).unregister(this);
                     } catch (InvocationTargetException | IllegalAccessException e) {
-                        AbstractPlugin.getAbstractInstance().getLogger().warning("Cannot unregister event: " + e.getMessage());
+                        AbstractBukkitPlugin.getAbstractInstance().getLogger().warning("Cannot unregister event: " + e.getMessage());
                     }
                 }
             }

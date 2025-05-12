@@ -1,6 +1,6 @@
 package me.inotsleep.utils.hooks.itemdisplay;
 
-import me.inotsleep.utils.AbstractPlugin;
+import me.inotsleep.utils.AbstractBukkitPlugin;
 import me.inotsleep.utils.hooks.base.BaseHook;
 import me.inotsleep.utils.logging.LoggingManager;
 import org.bukkit.Location;
@@ -13,7 +13,7 @@ public interface BaseDisplayHook extends BaseHook {
 
     static void init(boolean supported) {
         try {
-            if (supported) instance.set((BaseDisplayHook) AbstractPlugin.getAbstractInstance().getClass().getClassLoader().loadClass("me.inotsleep.utils.hooks.itemdisplay.DisplayHook").getConstructor().newInstance());
+            if (supported) instance.set((BaseDisplayHook) AbstractBukkitPlugin.getAbstractInstance().getClass().getClassLoader().loadClass("me.inotsleep.utils.hooks.itemdisplay.DisplayHook").getConstructor().newInstance());
         } catch (ClassNotFoundException | InvocationTargetException | InstantiationException | IllegalAccessException |
                  NoSuchMethodException e) {
             LoggingManager.error("Unable to load class of DisplayHook.", e);

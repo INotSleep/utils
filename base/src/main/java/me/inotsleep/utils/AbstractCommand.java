@@ -8,7 +8,7 @@ import java.util.List;
 public abstract class AbstractCommand extends Command {
     public AbstractCommand(String prefix, String commandLabel) {
         super(commandLabel);
-        AbstractPlugin.commandMap.register(prefix, this);
+        AbstractBukkitPlugin.commandMap.register(prefix, this);
     }
 
     public AbstractCommand(String prefix, String commandLabel, String permission) {
