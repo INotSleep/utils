@@ -12,8 +12,22 @@ public abstract class AbstractCommand extends Command {
     }
 
     public AbstractCommand(String prefix, String commandLabel, String permission) {
-        this(prefix, commandLabel);
+        super(commandLabel);
         this.setPermission(permission);
+        AbstractBukkitPlugin.commandMap.register(prefix, this);
+    }
+
+    public AbstractCommand(String prefix, String commandLabel, List<String> aliases) {
+        super(commandLabel);
+        this.setAliases(aliases);
+        AbstractBukkitPlugin.commandMap.register(prefix, this);
+    }
+
+    public AbstractCommand(String prefix, String commandLabel, String permission, List<String> aliases) {
+        super(commandLabel);
+        this.setAliases(aliases);
+        this.setPermission(permission);
+        AbstractBukkitPlugin.commandMap.register(prefix, this);
     }
 
     public abstract void toExecute(CommandSender sender, String label, String[] args);

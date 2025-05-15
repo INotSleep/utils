@@ -19,7 +19,14 @@ public abstract class SerializableObject {
     public void serialize(MappingNode node) {
         mutateSerialization();
 
-        for (Field field: getClass().getDeclaredFields()) {
+        List<Field> allFields = new ArrayList<>();
+        Class<?> cls = getClass();
+        while (cls != null) {
+            allFields.addAll(Arrays.asList(cls.getDeclaredFields()));
+            cls = cls.getSuperclass();
+        }
+
+        for (Field field: allFields) {
             field.setAccessible(true);
 
             Path path = field.getAnnotation(Path.class);
@@ -67,7 +74,14 @@ public abstract class SerializableObject {
             }
         }
 
-        for (Field field: getClass().getDeclaredFields()) {
+        List<Field> allFields = new ArrayList<>();
+        Class<?> cls = getClass();
+        while (cls != null) {
+            allFields.addAll(Arrays.asList(cls.getDeclaredFields()));
+            cls = cls.getSuperclass();
+        }
+
+        for (Field field: allFields) {
             field.setAccessible(true);
 
             Path path = field.getAnnotation(Path.class);

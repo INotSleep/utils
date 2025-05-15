@@ -1,5 +1,6 @@
 package me.inotsleep.utils;
 
+import me.inotsleep.utils.logging.LoggingManager;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -29,9 +30,11 @@ public class Window implements Listener {
                     if (!Modifier.isStatic(classMethod.getModifiers()) || classMethod.getReturnType() != HandlerList.class) continue;
 
                     try {
-                        ((HandlerList) classMethod.invoke(null)).unregister(this);
+                        HandlerList handlers = (HandlerList) classMethod.invoke(null);
+
+                        handlers.unregister(this);
                     } catch (InvocationTargetException | IllegalAccessException e) {
-                        AbstractBukkitPlugin.getAbstractInstance().getLogger().warning("Cannot unregister event: " + e.getMessage());
+                        LoggingManager.warn("Cannot unregister event", e);
                     }
                 }
             }
