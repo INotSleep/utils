@@ -11,7 +11,9 @@ public class DisplayHook implements BaseDisplayHook {
     @Override
     public BaseDisplayWrapper create(Location location, boolean isBlockDisplay) {
         DisplayWrapper dw = new DisplayWrapper();
-        dw.spawn(location, isBlockDisplay);
+        dw.spawn(
+                location, isBlockDisplay
+        );
         return dw;
     }
 }
