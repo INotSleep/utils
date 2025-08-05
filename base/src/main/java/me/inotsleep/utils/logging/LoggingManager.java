@@ -52,6 +52,7 @@ public class LoggingManager {
                  | InstantiationException
                  | IllegalAccessException
                  | LinkageError e) {
+            e.printStackTrace();
             return null;
         }
     }

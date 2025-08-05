@@ -40,6 +40,8 @@ public class Animation extends SerializableObject {
     @Path("frames")
     public Map<String, Frame> frames;
 
+    public Animation() {}
+
     public Animation(Map<String, Frame> frames) {
         this.frames = frames;
     }

@@ -10,26 +10,40 @@ import org.snakeyaml.engine.v2.scanner.StreamReader;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 
 public abstract class AbstractConfig extends SerializableObject {
     File configFile;
+    boolean readOnly;
+    InputStream stream;
+
+    public AbstractConfig(File configFile) {
+        this.configFile = configFile;
+        this.readOnly = false;
+    }
 
     public AbstractConfig(File baseDir, String fileName) {
         configFile = new File(baseDir, fileName);
+        readOnly = false;
+    }
+
+    public AbstractConfig(InputStream stream) {
+        readOnly = true;
+        this.stream = stream;
     }
 
     public void reload() {
-        if (!configFile.getParentFile().exists()) {
+        if (!readOnly && !configFile.getParentFile().exists()) {
             if (!configFile.getParentFile().mkdirs()) {
                 LoggingManager.error("Unable to create directory: " + configFile.getParentFile());
             }
         }
 
-        if (!configFile.exists()) {
+        if (!readOnly && !configFile.exists()) {
             LoggingManager.info("Configuration file " + configFile.getName() + " does not exist. Creating...");
             try {
-                configFile.createNewFile();
+                if (!configFile.createNewFile()) LoggingManager.warn("Config file is already exists, but File#exists() returned false.");
             } catch (IOException e) {
                 LoggingManager.error( "Unable to create configuration file: " + configFile.getName(), e);
                 return;
@@ -42,8 +56,10 @@ public abstract class AbstractConfig extends SerializableObject {
 
         MappingNode rootNode = null;
 
-        try (FileInputStream fileStream = new FileInputStream(configFile)) {
-            Composer composer = new Composer(settings, new ParserImpl(settings, new StreamReader(settings, new YamlUnicodeReader(fileStream))));
+        try {
+            if (stream == null) stream = Files.newInputStream(configFile.toPath());
+
+            Composer composer = new Composer(settings, new ParserImpl(settings, new StreamReader(settings, new YamlUnicodeReader(stream))));
 
             while (composer.hasNext()) {
                 Node node = composer.next();
@@ -53,14 +69,28 @@ public abstract class AbstractConfig extends SerializableObject {
             if (rootNode == null) return;
 
             deserialize(rootNode);
+
+            stream.close();
         } catch (IOException e) {
-            LoggingManager.error( "Unable to read configuration file: " + configFile.getName(), e);
+            LoggingManager.error("Unable to read configuration file: " + configFile.getName(), e);
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    LoggingManager.error("Unable to read configuration file: " + configFile.getName(), e);
+                }
+            }
         }
     }
 
 
 
     public void save() {
+        if (readOnly) {
+            LoggingManager.warn("Configuration file " + configFile.getName() + " tried to save, but it's read-only.");
+        }
+
         if (!configFile.getParentFile().exists()) {
             if (!configFile.getParentFile().mkdirs()) {
                 LoggingManager.error("Unable to create directory: " + configFile.getParentFile());
@@ -70,7 +100,7 @@ public abstract class AbstractConfig extends SerializableObject {
         if (!configFile.exists()) {
             LoggingManager.error("Configuration file " + configFile.getName() + " does not exist. Creating...");
             try {
-                configFile.createNewFile();
+                if (!configFile.createNewFile()) LoggingManager.warn("Config file is already exists, but File#exists() returned false.");
             } catch (IOException e) {
                 LoggingManager.error("Unable to create configuration file: " + configFile.getName(), e);
                 return;

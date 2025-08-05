@@ -19,6 +19,8 @@ public class Frame extends SerializableObject {
 
     public CubicBezierTransition transition;
 
+    public Frame() {}
+
     public Frame(Map<String, Parameter> parameters, int duration, String transition) {
         this.parameters = parameters;
         this.duration = duration;
