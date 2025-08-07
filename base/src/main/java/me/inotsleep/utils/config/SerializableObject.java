@@ -124,7 +124,11 @@ public abstract class SerializableObject {
             if (sComment != null) commentList.add(sComment);
             else return;
         } else {
-            commentList.addAll(Arrays.stream(comments.value()).collect(Collectors.toList()));
+            commentList.addAll(
+                    Arrays
+                            .stream(comments.value())
+                            .collect(Collectors.toList())
+            );
         }
 
         List < CommentLine > lines = new ArrayList < > ();
@@ -134,13 +138,22 @@ public abstract class SerializableObject {
             CommentLine line = new CommentLine(
                     Optional.empty(),
                     Optional.empty(),
-                    comment.value(),
+                    " " + comment.value(),
                     comment.type()
             );
 
             if (comment.type() == CommentType.BLOCK) lines.add(line);
             else if (comment.type() == CommentType.IN_LINE) inlineLines.add(line);
 
+        }
+
+        if (!lines.isEmpty()) {
+            lines.add(0, new CommentLine(
+                    Optional.empty(),
+                    Optional.empty(),
+                    "",
+                    CommentType.BLANK_LINE
+            ));
         }
 
         keyNode.setBlockComments(lines);
