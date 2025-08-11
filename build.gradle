@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'me.inotsleep'
-version = '1.4.9'
+version = '1.4.10'
 
 repositories {
     mavenCentral()
@@ -81,14 +81,26 @@ allprojects {
         compileOnly "com.github.decentsoftware-eu:decentholograms:2.8.9"
         compileOnly "org.apache.logging.log4j:log4j-api:2.24.3"
 
-        implementation("org.bstats:bstats-bukkit:3.0.2")
-        implementation('org.snakeyaml:snakeyaml-engine:2.9')
+        compileOnly "org.bstats:bstats-bukkit:3.0.2"
+        compileOnly 'org.snakeyaml:snakeyaml-engine:2.9'
     }
 }
 
+dependencies {
+    shadow "org.bstats:bstats-bukkit:3.0.2"
+    shadow 'org.snakeyaml:snakeyaml-engine:2.9'
+}
+
+configurations {
+    shadow
+}
+
 shadowJar {
-    archiveFileName.set("utils-${version}.jar")
-    setArchiveClassifier(null)
+    configurations = [project.configurations.shadow]
+    dependsOn(tasks.named('jar'))
+
+    archiveBaseName = "utils"
+    archiveClassifier = ""
 
     relocate("org.bstats", "me.inotsleep.utils.relocated.org.bstats")
     relocate("org.snakeyaml", "me.inotsleep.utils.relocated.org.snakeyaml")

@@ -16,6 +16,13 @@ public abstract class SerializableObject {
 
     protected SerializableObject() {}
 
+    private String[] parseHeader() {
+        Header header = getClass().getAnnotation(Header.class);
+        if (header == null) return null;
+
+        return header.value();
+    }
+
     public void serialize(MappingNode node) {
         mutateSerialization();
 
@@ -61,6 +68,21 @@ public abstract class SerializableObject {
                 NodeTuple tuple = new NodeTuple(keyNode, valueNode);
                 node.getValue().add(tuple);
             }
+            String[] header = parseHeader();
+            if (header != null) node.setBlockComments(
+                    Arrays
+                            .stream(header)
+                            .map(
+                            s ->
+                                new CommentLine(
+                                    Optional.empty(),
+                                    Optional.empty(),
+                                    " " + s,
+                                    CommentType.BLOCK
+                                )
+                            )
+                            .collect(Collectors.toList())
+            );
         }
     }
 
