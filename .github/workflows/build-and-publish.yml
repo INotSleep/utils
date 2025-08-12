@@ -1,0 +1,171 @@
+name: build-and-publish
+
+on: [ push, pull_request ]
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*','**/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: microsoft
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Compute build metadata
+        id: vars
+        run: |
+          SHA=$(git rev-parse --short=7 HEAD)
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CLASSIFIER="pr${{ github.event.number }}-$SHA"
+          else
+            CLASSIFIER="$SHA"
+          fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "classifier=$CLASSIFIER" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        env:
+          CI: "true"
+          GITHUB_REF: ${{ github.ref }}
+        run: ./gradlew --no-daemon clean build shadowJar -PbuildClassifier=${{ steps.vars.outputs.classifier }}
+
+      - name: Publish to Nexus
+        env:
+          NEXUS_USER: ${{ secrets.NEXUS_USER }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+          CI: "true"
+          GITHUB_REF: ${{ github.ref }}
+        run: ./gradlew --no-daemon publish -PbuildClassifier=${{ steps.vars.outputs.classifier }}
+
+      - name: Upload JARs
+        uses: actions/upload-artifact@v4
+        with:
+          name: utils-${{ steps.vars.outputs.classifier }}
+          path: build/libs/*.jar
+          if-no-files-found: error
+
+      - name: Generate usage instructions (Gradle/Maven)
+        id: usage
+        run: |
+          set -euo pipefail
+
+          GROUP="me.inotsleep"
+          ARTIFACT="utils"
+          REPO_URL="https://nexus.inotsleep.com/repository/maven-a4public/"
+          CLASSIFIER="${{ steps.vars.outputs.classifier }}"
+
+          JAR=$(ls build/libs/${ARTIFACT}-*.jar | head -n1)
+          FILE=$(basename "$JAR")
+
+          if [ -n "$CLASSIFIER" ] && [[ "$FILE" == *"-${CLASSIFIER}.jar" ]]; then
+            VERSION="${FILE#${ARTIFACT}-}"
+            VERSION="${VERSION%-${CLASSIFIER}.jar}"
+          else
+            VERSION="${FILE#${ARTIFACT}-}"
+            VERSION="${VERSION%.jar}"
+          fi
+
+          if [ -n "$CLASSIFIER" ]; then
+            GRADLE_SNIPPET=$(cat <<EOF
+repositories {
+    maven { url "$REPO_URL" }
+}
+dependencies {
+    implementation("$GROUP:$ARTIFACT:$VERSION:$CLASSIFIER")
+}
+EOF
+)
+            MAVEN_SNIPPET=$(cat <<'EOF'
+<repositories>
+  <repository>
+    <id>inotsleep-nexus</id>
+    <url>https://nexus.inotsleep.com/repository/maven-a4public/</url>
+  </repository>
+</repositories>
+
+<dependencies>
+  <dependency>
+    <groupId>me.inotsleep</groupId>
+    <artifactId>utils</artifactId>
+    <version>__VERSION__</version>
+    <classifier>__CLASSIFIER__</classifier>
+  </dependency>
+</dependencies>
+EOF
+)
+            MAVEN_SNIPPET="${MAVEN_SNIPPET/__VERSION__/$VERSION}"
+            MAVEN_SNIPPET="${MAVEN_SNIPPET/__CLASSIFIER__/$CLASSIFIER}"
+          else
+            GRADLE_SNIPPET=$(cat <<EOF
+repositories {
+    maven { url "$REPO_URL" }
+}
+dependencies {
+    implementation("$GROUP:$ARTIFACT:$VERSION")
+}
+EOF
+)
+            MAVEN_SNIPPET=$(cat <<'EOF'
+<repositories>
+  <repository>
+    <id>inotsleep-nexus</id>
+    <url>https://nexus.inotsleep.com/repository/maven-a4public/</url>
+  </repository>
+</repositories>
+
+<dependencies>
+  <dependency>
+    <groupId>me.inotsleep</groupId>
+    <artifactId>utils</artifactId>
+    <version>__VERSION__</version>
+  </dependency>
+</dependencies>
+EOF
+)
+            MAVEN_SNIPPET="${MAVEN_SNIPPET/__VERSION__/$VERSION}"
+          fi
+
+          echo "$GRADLE_SNIPPET" > usage-gradle.txt
+          echo "$MAVEN_SNIPPET"  > usage-maven.xml
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## How to use this build"
+            echo ""
+            echo "**Coordinates:** \`$GROUP:$ARTIFACT:$VERSION\`${CLASSIFIER:+, classifier \`$CLASSIFIER\`}"
+            echo ""
+            echo "### Gradle"
+            echo '```gradle'
+            echo "$GRADLE_SNIPPET"
+            echo '```'
+            echo ""
+            echo "### Maven"
+            echo '```xml'
+            echo "$MAVEN_SNIPPET"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
