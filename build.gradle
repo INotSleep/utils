@@ -154,7 +154,11 @@ publishing {
     repositories {
         maven {
             name = "inotsleep-nexus"
-            url = uri("https://nexus.inotsleep.com/repository/maven-public/")
+            url = uri(
+                    version.endsWith("-SNAPSHOT")
+                    ? "https://nexus.inotsleep.com/repository/maven-snapshots/"
+                    : "https://nexus.inotsleep.com/repository/maven-releases/"
+            )
             credentials {
                 username = System.getenv("NEXUS_USER")
                 password = System.getenv("NEXUS_PASSWORD")
