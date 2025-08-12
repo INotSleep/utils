@@ -92,61 +92,61 @@ jobs:
 
           if [ -n "$CLASSIFIER" ]; then
             GRADLE_SNIPPET=$(cat <<EOF
-repositories {
-    maven { url "$REPO_URL" }
-}
-dependencies {
-    implementation("$GROUP:$ARTIFACT:$VERSION:$CLASSIFIER")
-}
-EOF
-)
-            MAVEN_SNIPPET=$(cat <<'EOF'
-<repositories>
-  <repository>
-    <id>inotsleep-nexus</id>
-    <url>https://nexus.inotsleep.com/repository/maven-a4public/</url>
-  </repository>
-</repositories>
-
-<dependencies>
-  <dependency>
-    <groupId>me.inotsleep</groupId>
-    <artifactId>utils</artifactId>
-    <version>__VERSION__</version>
-    <classifier>__CLASSIFIER__</classifier>
-  </dependency>
-</dependencies>
-EOF
-)
-            MAVEN_SNIPPET="${MAVEN_SNIPPET/__VERSION__/$VERSION}"
-            MAVEN_SNIPPET="${MAVEN_SNIPPET/__CLASSIFIER__/$CLASSIFIER}"
-          else
-            GRADLE_SNIPPET=$(cat <<EOF
-repositories {
-    maven { url "$REPO_URL" }
-}
-dependencies {
-    implementation("$GROUP:$ARTIFACT:$VERSION")
-}
-EOF
-)
-            MAVEN_SNIPPET=$(cat <<'EOF'
-<repositories>
-  <repository>
-    <id>inotsleep-nexus</id>
-    <url>https://nexus.inotsleep.com/repository/maven-a4public/</url>
-  </repository>
-</repositories>
-
-<dependencies>
-  <dependency>
-    <groupId>me.inotsleep</groupId>
-    <artifactId>utils</artifactId>
-    <version>__VERSION__</version>
-  </dependency>
-</dependencies>
-EOF
-)
+          repositories {
+              maven { url "$REPO_URL" }
+          }
+          dependencies {
+              implementation("$GROUP:$ARTIFACT:$VERSION:$CLASSIFIER")
+          }
+          EOF
+          )
+                      MAVEN_SNIPPET=$(cat <<'EOF'
+          <repositories>
+            <repository>
+              <id>inotsleep-nexus</id>
+              <url>https://nexus.inotsleep.com/repository/maven-a4public/</url>
+            </repository>
+          </repositories>
+          
+          <dependencies>
+            <dependency>
+              <groupId>me.inotsleep</groupId>
+              <artifactId>utils</artifactId>
+              <version>__VERSION__</version>
+              <classifier>__CLASSIFIER__</classifier>
+            </dependency>
+          </dependencies>
+          EOF
+          )
+                      MAVEN_SNIPPET="${MAVEN_SNIPPET/__VERSION__/$VERSION}"
+                      MAVEN_SNIPPET="${MAVEN_SNIPPET/__CLASSIFIER__/$CLASSIFIER}"
+                    else
+                      GRADLE_SNIPPET=$(cat <<EOF
+          repositories {
+              maven { url "$REPO_URL" }
+          }
+          dependencies {
+              implementation("$GROUP:$ARTIFACT:$VERSION")
+          }
+          EOF
+          )
+                      MAVEN_SNIPPET=$(cat <<'EOF'
+          <repositories>
+            <repository>
+              <id>inotsleep-nexus</id>
+              <url>https://nexus.inotsleep.com/repository/maven-a4public/</url>
+            </repository>
+          </repositories>
+          
+          <dependencies>
+            <dependency>
+              <groupId>me.inotsleep</groupId>
+              <artifactId>utils</artifactId>
+              <version>__VERSION__</version>
+            </dependency>
+          </dependencies>
+          EOF
+          )
             MAVEN_SNIPPET="${MAVEN_SNIPPET/__VERSION__/$VERSION}"
           fi
 
