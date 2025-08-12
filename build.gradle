@@ -33,15 +33,15 @@ subprojects {
 }
 
 dependencies {
-    implementation("org.bstats:bstats-bukkit:3.0.2")
-    implementation('org.snakeyaml:snakeyaml-engine:2.9')
-    implementation(project(":base")) {
+    shadow("org.bstats:bstats-bukkit:3.0.2")
+    shadow('org.snakeyaml:snakeyaml-engine:2.9')
+    shadow(project(":base")) {
         attributes {
             attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 8)
         }
     }
 
-    implementation(project(":1_21_4")) {
+    shadow(project(":1_21_4")) {
         attributes {
             attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 21)
         }
@@ -84,11 +84,6 @@ allprojects {
         compileOnly "org.bstats:bstats-bukkit:3.0.2"
         compileOnly 'org.snakeyaml:snakeyaml-engine:2.9'
     }
-}
-
-dependencies {
-    shadow "org.bstats:bstats-bukkit:3.0.2"
-    shadow 'org.snakeyaml:snakeyaml-engine:2.9'
 }
 
 configurations {
@@ -148,6 +143,7 @@ publishing {
             groupId = project.group
             artifactId = "utils"
             version = project.version
+
         }
     }
 
