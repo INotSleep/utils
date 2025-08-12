@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public abstract class SerializableObject {
 
-    protected SerializableObject() {}
+    public SerializableObject() {}
 
     private String[] parseHeader() {
         Header header = getClass().getAnnotation(Header.class);

@@ -95,12 +95,21 @@ configurations {
     shadow
 }
 
+def isCI   = System.getenv("CI") == "true"
+def gitRef = System.getenv("GITHUB_REF") ?: ""
+
+if (isCI && !gitRef.startsWith("refs/tags/") && !version.endsWith("-SNAPSHOT")) {
+    version = "${version}-SNAPSHOT"
+}
+
+def extBuildClassifier = (findProperty("buildClassifier") as String) ?: ""
+
 shadowJar {
     configurations = [project.configurations.shadow]
     dependsOn(tasks.named('jar'))
 
     archiveBaseName = "utils"
-    archiveClassifier = ""
+    archiveClassifier = extBuildClassifier
 
     relocate("org.bstats", "me.inotsleep.utils.relocated.org.bstats")
     relocate("org.snakeyaml", "me.inotsleep.utils.relocated.org.snakeyaml")
@@ -145,19 +154,10 @@ publishing {
     repositories {
         maven {
             name = "inotsleep-nexus"
-            url = uri("https://nexus.inotsleep.com/repository/maven-a4public/")
+            url = uri("https://nexus.inotsleep.com/repository/maven-public/")
             credentials {
                 username = System.getenv("NEXUS_USER")
                 password = System.getenv("NEXUS_PASSWORD")
-            }
-        }
-
-        maven {
-            name = "l0styru-nexus"
-            url = uri("https://repo.l0sty.ru/releases/")
-            credentials {
-                username = System.getenv("L0STYRU_NEXUS_USERNAME")
-                password = System.getenv("L0STYRU_NEXUS_PASSWORD")
             }
         }
     }
