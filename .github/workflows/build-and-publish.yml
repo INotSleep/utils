@@ -77,7 +77,7 @@ jobs:
 
           GROUP="me.inotsleep"
           ARTIFACT="utils"
-          REPO_URL="https://nexus.inotsleep.com/repository/maven-a4public/"
+          REPO_URL="https://nexus.inotsleep.com/repository/maven-public/"
           CLASSIFIER="${{ steps.vars.outputs.classifier }}"
 
           JAR=$(ls build/libs/${ARTIFACT}-*.jar | head -n1)
@@ -105,7 +105,7 @@ jobs:
           <repositories>
             <repository>
               <id>inotsleep-nexus</id>
-              <url>https://nexus.inotsleep.com/repository/maven-a4public/</url>
+              <url>https://nexus.inotsleep.com/repository/maven-public/</url>
             </repository>
           </repositories>
           
