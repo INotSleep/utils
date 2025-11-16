@@ -10,8 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Field;
 
-public abstract class AbstractBukkitPlugin<T extends AbstractBukkitPlugin<T>> extends JavaPlugin {
-    private static AbstractBukkitPlugin<?> instance;
+public abstract class AbstractBukkitPlugin extends JavaPlugin {
     public static CommandMap commandMap;
     public static Metrics metrics;
 
@@ -27,14 +26,9 @@ public abstract class AbstractBukkitPlugin<T extends AbstractBukkitPlugin<T>> ex
             LoggingManager.error("Failed to get command map.", e);
             Bukkit.getPluginManager().disablePlugin(this);
         }
-        instance = this;
-        Bukkit.getPluginManager().registerEvents(new EventListener(), this);
+        Bukkit.getPluginManager().registerEvents(new EventListener(this), this);
         Initializer.tryToInitialize();
         doEnable();
-    }
-
-    public static void disablePlugin() {
-        Bukkit.getPluginManager().disablePlugin(instance);
     }
 
     @Override
@@ -47,13 +41,5 @@ public abstract class AbstractBukkitPlugin<T extends AbstractBukkitPlugin<T>> ex
 
     public void setMetrics(int id) {
         metrics = new Metrics(this, id);
-    }
-
-    public static AbstractBukkitPlugin<?> getAbstractInstance() {
-        return instance;
-    }
-
-    public static <T extends AbstractBukkitPlugin<T>> T getInstanceByClazz(Class<T> clazz) {
-        return (T) instance;
     }
 }

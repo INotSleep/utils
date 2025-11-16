@@ -10,7 +10,7 @@ import java.util.List;
 public class HolographicDisplaysHologramAPI implements HologramAPI {
     public HolographicDisplaysAPI api;
 
-    public HolographicDisplaysHologramAPI(AbstractBukkitPlugin<?> plugin) {
+    public HolographicDisplaysHologramAPI(AbstractBukkitPlugin plugin) {
         Initializer.callInitEvent(this);
         api = HolographicDisplaysAPI.get(plugin);
     }

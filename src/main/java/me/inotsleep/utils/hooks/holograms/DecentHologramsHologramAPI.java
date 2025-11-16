@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class DecentHologramsHologramAPI implements HologramAPI {
-    private final AbstractBukkitPlugin<?> plugin;
-    public DecentHologramsHologramAPI(AbstractBukkitPlugin<?> plugin) {
+    private final AbstractBukkitPlugin plugin;
+    public DecentHologramsHologramAPI(AbstractBukkitPlugin plugin) {
         Initializer.callInitEvent(this);
         this.plugin = plugin;
     }

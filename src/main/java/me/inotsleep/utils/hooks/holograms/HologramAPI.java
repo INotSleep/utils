@@ -12,17 +12,17 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public interface HologramAPI extends BaseHook {
     AtomicReference<HologramAPI> instance = new AtomicReference<>(null);
-    static void init() {
+    static void init(AbstractBukkitPlugin plugin) {
         LoggingManager.info("Initializing HologramAPI");
 
-        if (Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays")) instance.set(new HolographicDisplaysHologramAPI(AbstractBukkitPlugin.getAbstractInstance()));
-        else if (Bukkit.getPluginManager().isPluginEnabled("DecentHolograms")) instance.set(new DecentHologramsHologramAPI(AbstractBukkitPlugin.getAbstractInstance()));
+        if (Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays")) instance.set(new HolographicDisplaysHologramAPI(plugin));
+        else if (Bukkit.getPluginManager().isPluginEnabled("DecentHolograms")) instance.set(new DecentHologramsHologramAPI(plugin));
         else instance.set(new NullHologramAPI());
     }
 
-    static void checkPlugin(Plugin plugin) {
+    static void checkPlugin(AbstractBukkitPlugin plugin, Plugin toCheck) {
         if (instance.get() == null) return;
-        if (plugin.getName().equals("HolographicDisplays") || plugin.getName().equals("DecentHolograms")) init();
+        if (toCheck.getName().equals("HolographicDisplays") || toCheck.getName().equals("DecentHolograms")) init(plugin);
     }
 
     Hologram createHologram(List<String> text, Location location);

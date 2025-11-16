@@ -11,9 +11,9 @@ import org.bukkit.inventory.Inventory;
 import java.lang.reflect.*;
 
 public class Window implements Listener {
-    public Inventory inventory;
+    protected Inventory inventory;
 
-    public Window(AbstractBukkitPlugin<?> plugin) {
+    public Window(AbstractBukkitPlugin plugin) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
