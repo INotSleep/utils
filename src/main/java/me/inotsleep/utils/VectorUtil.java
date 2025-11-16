@@ -1,6 +1,5 @@
-package me.inotsleep.utils.util_1_21_4;
+package me.inotsleep.utils;
 
-import me.inotsleep.utils.Pair;
 import org.bukkit.util.Vector;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
