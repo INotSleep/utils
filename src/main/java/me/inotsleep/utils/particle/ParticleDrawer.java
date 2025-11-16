@@ -1,7 +1,5 @@
 package me.inotsleep.utils.particle;
 
-import org.bukkit.entity.Player;
-
 public class ParticleDrawer {
 
     public static void draw(Object player, Parameter parameter, double posX, double posY, double posZ) {

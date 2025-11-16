@@ -1,6 +1,7 @@
 package me.inotsleep.utils;
 
 import org.bukkit.command.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ public abstract class AbstractCommand extends Command {
     public abstract void toExecute(CommandSender sender, String label, String[] args);
 
     @Override
-    public boolean execute(CommandSender sender,String label, String[] args) {
+    public boolean execute(@NotNull CommandSender sender, @NotNull String label, String @NotNull [] args) {
         toExecute(sender, label, args);
         return true;
     }
@@ -41,7 +42,7 @@ public abstract class AbstractCommand extends Command {
     public abstract List<String> complete(CommandSender sender, String[] args);
 
     @Override
-    public List<String> tabComplete(CommandSender sender, String alias, String[] args) {
+    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, String @NotNull [] args) {
         return filter(complete(sender, args), args);
     }
 

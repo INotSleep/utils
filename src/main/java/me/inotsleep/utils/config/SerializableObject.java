@@ -183,16 +183,21 @@ public abstract class SerializableObject {
     }
 
     private Node serializeValue(Object value) {
-        if (value instanceof SerializableObject) {
-            MappingNode childNode = new MappingNode(Tag.MAP, new ArrayList < > (), FlowStyle.AUTO);
-            ((SerializableObject) value).serialize(childNode);
-            return childNode;
-        } else if (value instanceof Map) {
-            return serializeMap((Map < ? , ? > ) value);
-        } else if (value instanceof Collection) {
-            return serializeCollection((Collection < ? > ) value);
-        } else {
-            return serializePrimitive(value);
+        switch (value) {
+            case SerializableObject serializableObject -> {
+                MappingNode childNode = new MappingNode(Tag.MAP, new ArrayList<>(), FlowStyle.AUTO);
+                serializableObject.serialize(childNode);
+                return childNode;
+            }
+            case Map<?, ?> map -> {
+                return serializeMap(map);
+            }
+            case Collection<?> collection -> {
+                return serializeCollection(collection);
+            }
+            case null, default -> {
+                return serializePrimitive(value);
+            }
         }
     }
 
@@ -320,8 +325,7 @@ public abstract class SerializableObject {
         Class < ? > valClass = Object.class;
         java.lang.reflect.Type valGenType = null;
 
-        if (genericType instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) genericType;
+        if (genericType instanceof ParameterizedType pt) {
             java.lang.reflect.Type kType = pt.getActualTypeArguments()[0];
             java.lang.reflect.Type vType = pt.getActualTypeArguments()[1];
 
@@ -350,8 +354,7 @@ public abstract class SerializableObject {
         Class < ? > elementClass = Object.class;
         java.lang.reflect.Type elementGenType = null;
 
-        if (genericType instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) genericType;
+        if (genericType instanceof ParameterizedType pt) {
             java.lang.reflect.Type argType = pt.getActualTypeArguments()[0];
             elementGenType = argType;
             if (argType instanceof Class) {

@@ -32,19 +32,13 @@ public class JavaLogger implements ILogger {
     }
 
     private java.util.logging.Level convertLevel(Level level) {
-        switch (level) {
-            case TRACE:
-                return java.util.logging.Level.FINE;
-            case DEBUG:
-                return java.util.logging.Level.CONFIG;
-            case INFO:
-                return java.util.logging.Level.INFO;
-            case WARN:
-                return java.util.logging.Level.WARNING;
-            case ERROR:
-                return java.util.logging.Level.SEVERE;
-        }
+        return switch (level) {
+            case TRACE -> java.util.logging.Level.FINE;
+            case DEBUG -> java.util.logging.Level.CONFIG;
+            case INFO -> java.util.logging.Level.INFO;
+            case WARN -> java.util.logging.Level.WARNING;
+            case ERROR -> java.util.logging.Level.SEVERE;
+        };
 
-        return DEFAULT_LEVEL;
     }
 }

@@ -4,7 +4,6 @@ import org.bukkit.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
 
 import java.util.List;
 
@@ -36,8 +35,6 @@ public class Util {
             return new ItemStack(data);
         } else if (particle.getDataType() == BlockData.class) {
             return Bukkit.createBlockData(data);
-        } else if (particle.getDataType() == MaterialData.class) {
-            return new MaterialData(data);
         }
 
         return null;

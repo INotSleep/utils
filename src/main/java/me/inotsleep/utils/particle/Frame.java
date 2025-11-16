@@ -27,7 +27,7 @@ public class Frame extends SerializableObject {
         this.transition = new CubicBezierTransition(transition);
         if (duration < 0) {
             LoggingManager.error("Duration of frame must be above 0! Please recheck your configuration");
-            duration = 1;
+            this.duration = 1;
         }
     }
 

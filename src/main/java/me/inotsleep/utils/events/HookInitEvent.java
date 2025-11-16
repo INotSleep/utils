@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class HookInitEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
-    private BaseHook hook;
+    private final BaseHook hook;
 
     public HookInitEvent(BaseHook hook) {
         this.hook = hook;

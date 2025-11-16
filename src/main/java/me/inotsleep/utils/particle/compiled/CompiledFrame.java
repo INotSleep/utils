@@ -2,7 +2,6 @@ package me.inotsleep.utils.particle.compiled;
 
 import me.inotsleep.utils.particle.Parameter;
 import me.inotsleep.utils.particle.ParticleDrawer;
-import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;

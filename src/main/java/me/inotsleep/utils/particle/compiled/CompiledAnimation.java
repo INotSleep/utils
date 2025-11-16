@@ -1,7 +1,5 @@
 package me.inotsleep.utils.particle.compiled;
 
-import org.bukkit.entity.Player;
-
 import java.util.ArrayList;
 import java.util.List;
 
