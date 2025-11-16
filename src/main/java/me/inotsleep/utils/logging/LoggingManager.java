@@ -1,33 +1,64 @@
 package me.inotsleep.utils.logging;
 
+import org.bukkit.plugin.java.JavaPlugin;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-public class LoggingManager {
-    private static ILogger logger;
+public final class LoggingManager {
+
+    private static final Map<ClassLoader, ILogger> LOGGERS = new ConcurrentHashMap<>();
+    private static ILogger fallbackLogger;
+    private static final StackWalker WALKER =
+            StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
     public static void setLogger(final ILogger logger) {
-        LoggingManager.logger = logger;
+        if (logger == null) {
+            return;
+        }
+
+        Class<?> caller = findCallerClass();
+        if (caller != null) {
+            ClassLoader cl = caller.getClassLoader();
+            LOGGERS.put(cl, logger);
+
+            if (fallbackLogger == null) {
+                fallbackLogger = logger;
+            }
+        } else {
+            fallbackLogger = logger;
+        }
     }
 
     public static void setLogger(final Object logger) {
-        if (logger.getClass().getName().contains("slf4j") && logger.getClass().getName().contains("Log")) {
-            setLogger(instantiateWrapper("me.inotsleep.utils.logging.SLF4JLogger", logger));
+        if (logger == null) {
+            return;
         }
 
-        if (logger.getClass().getName().contains("log4j") && logger.getClass().getName().contains("Log")) {
-            setLogger(instantiateWrapper("me.inotsleep.utils.logging.ApacheLog4JLogger", logger));
+        String name = logger.getClass().getName();
+
+        if (name.contains("slf4j") && name.contains("Log")) {
+            ILogger wrapped = instantiateWrapper("me.inotsleep.utils.logging.SLF4JLogger", logger);
+            setLogger(wrapped);
+            return;
+        }
+
+        if (name.contains("log4j") && name.contains("Log")) {
+            ILogger wrapped = instantiateWrapper("me.inotsleep.utils.logging.ApacheLog4JLogger", logger);
+            setLogger(wrapped);
+            return;
         }
 
         if (Logger.class.isAssignableFrom(logger.getClass())) {
             setLogger(new JavaLogger((Logger) logger));
         }
-
     }
 
     public static ILogger getLogger() {
-        return logger;
+        return resolveLogger();
     }
 
     @SuppressWarnings("unchecked")
@@ -56,26 +87,75 @@ public class LoggingManager {
             return null;
         }
     }
+    private static Class<?> findCallerClass() {
+        return WALKER.walk(stream ->
+                stream
+                        .map(StackWalker.StackFrame::getDeclaringClass)
+                        .filter(c -> c != LoggingManager.class)
+                        .findFirst()
+                        .orElse(null)
+        );
+    }
+
+    private static ILogger resolveLogger() {
+        Class<?> caller = findCallerClass();
+
+        if (caller != null) {
+            ClassLoader cl = caller.getClassLoader();
+            ILogger logger = LOGGERS.get(cl);
+            if (logger != null) {
+                return logger;
+            }
+        }
+
+        return fallbackLogger;
+    }
+
+    public static ILogger wrap(Object logger) {
+        if (logger == null) {
+            return null;
+        }
+
+        String name = logger.getClass().getName();
+
+        if (name.contains("slf4j") && name.contains("Log")) {
+            return instantiateWrapper("me.inotsleep.utils.logging.SLF4JLogger", logger);
+        }
+
+        if (name.contains("log4j") && name.contains("Log")) {
+            return instantiateWrapper("me.inotsleep.utils.logging.ApacheLog4JLogger", logger);
+        }
+
+        if (logger instanceof Logger j) {
+            return new JavaLogger(j);
+        }
+
+        return null;
+    }
 
     public static void log(String message) {
+        ILogger logger = resolveLogger();
         if (logger == null) return;
 
         logger.log(message);
     }
 
     public static void log(String message, Throwable throwable) {
+        ILogger logger = resolveLogger();
         if (logger == null) return;
 
         logger.log(message, throwable);
     }
 
     public static void log(Level level, String message) {
+        ILogger logger = resolveLogger();
         if (logger == null) return;
 
         logger.log(level, message);
     }
 
     public static void log(Level level, String message, Throwable throwable) {
+        ILogger logger = resolveLogger();
         if (logger == null) return;
 
         logger.log(level, message, throwable);

@@ -1,0 +1,3 @@
+name: INSUtilsAPI
+description: Small Util api for plugins
+version: ${version}
