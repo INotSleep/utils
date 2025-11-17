@@ -6,7 +6,7 @@ plugins {
 
 apply plugin: 'java'
 
-group = 'me.inotsleep'
+group = 'com.inotsleep'
 version = '2.0.0'
 
 repositories {
@@ -63,8 +63,8 @@ shadowJar {
     archiveBaseName = "utils"
     archiveClassifier = extBuildClassifier
 
-    relocate("org.bstats", "me.inotsleep.utils.relocated.org.bstats")
-    relocate("org.snakeyaml", "me.inotsleep.utils.relocated.org.snakeyaml")
+    relocate("org.bstats", "com.inotsleep.utils.relocated.org.bstats")
+    relocate("org.snakeyaml", "com.inotsleep.utils.relocated.org.snakeyaml")
 }
 
 def targetJavaVersion = 21

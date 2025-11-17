@@ -75,7 +75,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          GROUP="me.inotsleep"
+          GROUP="com.inotsleep"
           ARTIFACT="utils"
           REPO_URL="https://nexus.inotsleep.com/repository/maven-public/"
           CLASSIFIER="${{ steps.vars.outputs.classifier }}"
@@ -111,7 +111,7 @@ jobs:
           
           <dependencies>
             <dependency>
-              <groupId>me.inotsleep</groupId>
+              <groupId>com.inotsleep</groupId>
               <artifactId>utils</artifactId>
               <version>__VERSION__</version>
               <classifier>__CLASSIFIER__</classifier>
@@ -141,7 +141,7 @@ jobs:
           
           <dependencies>
             <dependency>
-              <groupId>me.inotsleep</groupId>
+              <groupId>com.inotsleep</groupId>
               <artifactId>utils</artifactId>
               <version>__VERSION__</version>
             </dependency>
