@@ -1,8 +1,8 @@
 package com.inotsleep.utils.plugin;
 
-import com.inotsleep.utils.AbstractBukkitPlugin;
+import com.inotsleep.utils.BukkitPlugin;
 
-public class INSUtilsAPIBukkitPlugin extends AbstractBukkitPlugin implements INSUtilsPlugin {
+public class INSUtilsAPIBukkitPlugin extends BukkitPlugin implements INSUtilsPlugin {
     @Override
     public void doDisable() {
 

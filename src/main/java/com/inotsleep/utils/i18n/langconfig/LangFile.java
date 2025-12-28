@@ -1,6 +1,6 @@
 package com.inotsleep.utils.i18n.langconfig;
 
-import com.inotsleep.utils.config.AbstractConfig;
+import com.inotsleep.utils.config.Config;
 import org.snakeyaml.engine.v2.common.FlowStyle;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.nodes.*;
@@ -11,10 +11,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LangConfig extends AbstractConfig {
-    Map<String, LangEntry> translations = new HashMap<>();
+public class LangFile extends Config {
+    private final Map<String, LangEntry> translations = new HashMap<>();
+
+    public LangEntry getEntry(String key) {
+        return translations.get(key);
+    }
+
     @Override
     protected void beforeDeserialization(MappingNode node) {
+        translations.clear();
         processMappingNode(node, "");
     }
 
@@ -48,6 +54,8 @@ public class LangConfig extends AbstractConfig {
 
     @Override
     protected void beforeSerialization(MappingNode root) {
+        root.setValue(new ArrayList<>());
+
         for (Map.Entry<String, LangEntry> entry : translations.entrySet()) {
             String fullKey = entry.getKey();
             LangEntry langEntry = entry.getValue();
@@ -61,7 +69,7 @@ public class LangConfig extends AbstractConfig {
         String keyPart = parts[index];
         if (index == parts.length - 1) {
             ScalarNode keyNode = new ScalarNode(Tag.STR, keyPart, ScalarStyle.PLAIN);
-            Node valueNode;
+            Node valueNode = null;
 
             if (entry.isList()) {
                 List<Node> items = new ArrayList<>();
@@ -69,7 +77,7 @@ public class LangConfig extends AbstractConfig {
                     items.add(new ScalarNode(Tag.STR, line, ScalarStyle.PLAIN));
                 }
                 valueNode = new SequenceNode(Tag.SEQ, items, FlowStyle.AUTO);
-            } else {
+            } else if (entry.isString()) {
                 valueNode = new ScalarNode(
                         Tag.STR,
                         entry.getValue(),
@@ -77,7 +85,7 @@ public class LangConfig extends AbstractConfig {
                 );
             }
 
-            current.getValue().add(new NodeTuple(keyNode, valueNode));
+            if (valueNode != null) current.getValue().add(new NodeTuple(keyNode, valueNode));
             return;
         }
 
@@ -104,8 +112,7 @@ public class LangConfig extends AbstractConfig {
         insertLangEntry(childMap, parts, index + 1, entry);
     }
 
-
-    public LangConfig(File configFile) {
+    public LangFile(File configFile) {
         super(configFile);
     }
 }

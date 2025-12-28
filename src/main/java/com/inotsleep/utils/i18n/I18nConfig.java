@@ -1,16 +1,22 @@
 package com.inotsleep.utils.i18n;
 
-import com.inotsleep.utils.config.AbstractConfig;
+import com.inotsleep.utils.config.Config;
 import com.inotsleep.utils.config.Path;
 import com.inotsleep.utils.plugin.INSUtilsAPICore;
 
-import java.io.File;
-
-public class I18nConfig extends AbstractConfig {
+public class I18nConfig extends Config {
     @Path("default-language")
-    String defaultLanguage = "en";
+    private String defaultLanguage = "en";
 
-    public I18nConfig(String fileName) {
+    public String getDefaultLanguage() {
+        return defaultLanguage;
+    }
+
+    public void setDefaultLanguage(String defaultLanguage) {
+        this.defaultLanguage = defaultLanguage;
+    }
+
+    public I18nConfig() {
         super(INSUtilsAPICore.getInstance().getDataFolder(), "i18n/config.yml");
     }
 }

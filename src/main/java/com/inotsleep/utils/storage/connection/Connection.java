@@ -7,7 +7,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public interface BaseConnection {
+public interface Connection {
     void connect() throws SQLException;
     void disconnect() throws SQLException;
     ResultSet executeQuery(String query, Object... params) throws SQLException;
@@ -16,14 +16,11 @@ public interface BaseConnection {
 
     boolean isConnected();
 
-    static BaseConnection createConnection(StorageSettings settings, File basePath) throws SQLException {
-        switch (settings.type) {
-            case SQLITE:
-                return new SQLiteConnection(settings, basePath);
-            case MYSQL:
-                return new MySQLConnection(settings);
-            default:
-                throw new IllegalArgumentException("Unsupported storage type: " + settings.type);
-        }
+    static Connection createConnection(StorageSettings settings, File basePath) throws SQLException {
+        return switch (settings.type) {
+            case SQLITE -> new SQLiteConnection(settings, basePath);
+            case MYSQL -> new MySQLConnection(settings);
+            default -> throw new IllegalArgumentException("Unsupported storage type: " + settings.type);
+        };
     }
 }

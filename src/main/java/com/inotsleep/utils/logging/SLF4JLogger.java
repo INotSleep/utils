@@ -1,13 +1,11 @@
 package com.inotsleep.utils.logging;
 
-import org.slf4j.Logger;
-
-public class SLF4JLogger implements ILogger{
+public class SLF4JLogger implements Logger {
     private static final Level DEFAULT_LEVEL = Level.INFO;
-    private final Logger logger;
+    private final org.slf4j.Logger logger;
 
     public SLF4JLogger(Object logger) {
-        this.logger = (Logger) logger;
+        this.logger = (org.slf4j.Logger) logger;
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.inotsleep.utils.hooks.holograms;
 
-import com.inotsleep.utils.AbstractBukkitPlugin;
-import com.inotsleep.utils.hooks.base.BaseHook;
+import com.inotsleep.utils.BukkitPlugin;
+import com.inotsleep.utils.hooks.Hook;
 import com.inotsleep.utils.logging.LoggingManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -10,9 +10,9 @@ import org.bukkit.plugin.Plugin;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public interface HologramAPI extends BaseHook {
+public interface HologramAPI extends Hook {
     AtomicReference<HologramAPI> instance = new AtomicReference<>(null);
-    static void init(AbstractBukkitPlugin plugin) {
+    static void init(BukkitPlugin plugin) {
         LoggingManager.info("Initializing HologramAPI");
 
         if (Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays")) instance.set(new HolographicDisplaysHologramAPI(plugin));
@@ -20,7 +20,7 @@ public interface HologramAPI extends BaseHook {
         else instance.set(new NullHologramAPI());
     }
 
-    static void checkPlugin(AbstractBukkitPlugin plugin, Plugin toCheck) {
+    static void checkPlugin(BukkitPlugin plugin, Plugin toCheck) {
         if (instance.get() == null) return;
         if (toCheck.getName().equals("HolographicDisplays") || toCheck.getName().equals("DecentHolograms")) init(plugin);
     }

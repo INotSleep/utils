@@ -8,7 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public abstract class AbstractBukkitPlugin extends JavaPlugin {
+public abstract class BukkitPlugin extends JavaPlugin {
     public static CommandMap commandMap;
     public static Metrics metrics;
 

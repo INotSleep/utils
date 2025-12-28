@@ -1,13 +1,11 @@
 package com.inotsleep.utils.logging;
 
-import org.apache.logging.log4j.Logger;
-
-public class ApacheLog4JLogger implements ILogger {
+public class ApacheLog4JLogger implements Logger {
     private static final org.apache.logging.log4j.Level DEFAULT_LEVEL = org.apache.logging.log4j.Level.INFO;
-    private final Logger logger;
+    private final org.apache.logging.log4j.Logger logger;
 
     public ApacheLog4JLogger(Object logger) {
-        this.logger = (Logger) logger;
+        this.logger = (org.apache.logging.log4j.Logger) logger;
     }
 
     @Override

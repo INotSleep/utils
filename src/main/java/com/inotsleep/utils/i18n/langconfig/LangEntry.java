@@ -25,4 +25,7 @@ public class LangEntry {
     public boolean isList() {
         return listValue != null;
     }
+    public boolean isString() {
+        return value != null;
+    }
 }

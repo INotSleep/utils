@@ -4,16 +4,15 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 public final class LoggingManager {
 
-    private static final Map<ClassLoader, ILogger> LOGGERS = new ConcurrentHashMap<>();
-    private static ILogger fallbackLogger;
+    private static final Map<ClassLoader, Logger> LOGGERS = new ConcurrentHashMap<>();
+    private static Logger fallbackLogger;
     private static final StackWalker WALKER =
             StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
-    public static void setLogger(final ILogger logger) {
+    public static void setLogger(final Logger logger) {
         if (logger == null) {
             return;
         }
@@ -39,23 +38,23 @@ public final class LoggingManager {
         String name = logger.getClass().getName();
 
         if (name.contains("slf4j") && name.contains("Log")) {
-            ILogger wrapped = instantiateWrapper("me.inotsleep.utils.logging.SLF4JLogger", logger);
+            Logger wrapped = instantiateWrapper("me.inotsleep.utils.logging.SLF4JLogger", logger);
             setLogger(wrapped);
             return;
         }
 
         if (name.contains("log4j") && name.contains("Log")) {
-            ILogger wrapped = instantiateWrapper("me.inotsleep.utils.logging.ApacheLog4JLogger", logger);
+            Logger wrapped = instantiateWrapper("me.inotsleep.utils.logging.ApacheLog4JLogger", logger);
             setLogger(wrapped);
             return;
         }
 
-        if (Logger.class.isAssignableFrom(logger.getClass())) {
-            setLogger(new JavaLogger((Logger) logger));
+        if (java.util.logging.Logger.class.isAssignableFrom(logger.getClass())) {
+            setLogger(new JavaLogger((java.util.logging.Logger) logger));
         }
     }
 
-    public static ILogger getLogger() {
+    public static Logger getLogger() {
         return resolveLogger();
     }
 
@@ -95,12 +94,12 @@ public final class LoggingManager {
         );
     }
 
-    private static ILogger resolveLogger() {
+    private static Logger resolveLogger() {
         Class<?> caller = findCallerClass();
 
         if (caller != null) {
             ClassLoader cl = caller.getClassLoader();
-            ILogger logger = LOGGERS.get(cl);
+            Logger logger = LOGGERS.get(cl);
             if (logger != null) {
                 return logger;
             }
@@ -109,7 +108,7 @@ public final class LoggingManager {
         return fallbackLogger;
     }
 
-    public static ILogger wrap(Object logger) {
+    public static Logger wrap(Object logger) {
         if (logger == null) {
             return null;
         }
@@ -124,7 +123,7 @@ public final class LoggingManager {
             return instantiateWrapper("com.inotsleep.utils.logging.ApacheLog4JLogger", logger);
         }
 
-        if (logger instanceof Logger j) {
+        if (logger instanceof java.util.logging.Logger j) {
             return new JavaLogger(j);
         }
 
@@ -132,28 +131,28 @@ public final class LoggingManager {
     }
 
     public static void log(String message) {
-        ILogger logger = resolveLogger();
+        Logger logger = resolveLogger();
         if (logger == null) return;
 
         logger.log(message);
     }
 
     public static void log(String message, Throwable throwable) {
-        ILogger logger = resolveLogger();
+        Logger logger = resolveLogger();
         if (logger == null) return;
 
         logger.log(message, throwable);
     }
 
     public static void log(Level level, String message) {
-        ILogger logger = resolveLogger();
+        Logger logger = resolveLogger();
         if (logger == null) return;
 
         logger.log(level, message);
     }
 
     public static void log(Level level, String message, Throwable throwable) {
-        ILogger logger = resolveLogger();
+        Logger logger = resolveLogger();
         if (logger == null) return;
 
         logger.log(level, message, throwable);

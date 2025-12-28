@@ -6,8 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 
-class SQLiteConnection implements BaseConnection {
-    private Connection connection;
+class SQLiteConnection implements Connection {
+    private java.sql.Connection connection;
     private final String url;
 
     public SQLiteConnection(StorageSettings settings, File basePath) {

@@ -1,15 +1,15 @@
 package com.inotsleep.utils.events;
 
-import com.inotsleep.utils.hooks.base.BaseHook;
+import com.inotsleep.utils.hooks.Hook;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 public class HookInitEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
-    private final BaseHook hook;
+    private final Hook hook;
 
-    public HookInitEvent(BaseHook hook) {
+    public HookInitEvent(Hook hook) {
         this.hook = hook;
     }
 
@@ -22,7 +22,7 @@ public class HookInitEvent extends Event {
         return handlers;
     }
 
-    public BaseHook getHook() {
+    public Hook getHook() {
         return hook;
     }
 }

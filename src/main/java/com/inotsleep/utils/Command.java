@@ -6,29 +6,29 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractCommand extends Command {
-    public AbstractCommand(String prefix, String commandLabel) {
+public abstract class Command extends org.bukkit.command.Command {
+    public Command(String prefix, String commandLabel) {
         super(commandLabel);
-        AbstractBukkitPlugin.commandMap.register(prefix, this);
+        BukkitPlugin.commandMap.register(prefix, this);
     }
 
-    public AbstractCommand(String prefix, String commandLabel, String permission) {
+    public Command(String prefix, String commandLabel, String permission) {
         super(commandLabel);
         this.setPermission(permission);
-        AbstractBukkitPlugin.commandMap.register(prefix, this);
+        BukkitPlugin.commandMap.register(prefix, this);
     }
 
-    public AbstractCommand(String prefix, String commandLabel, List<String> aliases) {
+    public Command(String prefix, String commandLabel, List<String> aliases) {
         super(commandLabel);
         this.setAliases(aliases);
-        AbstractBukkitPlugin.commandMap.register(prefix, this);
+        BukkitPlugin.commandMap.register(prefix, this);
     }
 
-    public AbstractCommand(String prefix, String commandLabel, String permission, List<String> aliases) {
+    public Command(String prefix, String commandLabel, String permission, List<String> aliases) {
         super(commandLabel);
         this.setAliases(aliases);
         this.setPermission(permission);
-        AbstractBukkitPlugin.commandMap.register(prefix, this);
+        BukkitPlugin.commandMap.register(prefix, this);
     }
 
     public abstract void toExecute(CommandSender sender, String label, String[] args);

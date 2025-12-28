@@ -4,8 +4,8 @@ import com.inotsleep.utils.storage.StorageSettings;
 
 import java.sql.*;
 
-class MySQLConnection implements BaseConnection {
-    private Connection connection;
+class MySQLConnection implements Connection {
+    private java.sql.Connection connection;
     private final String url;
     private final String user;
     private final String password;

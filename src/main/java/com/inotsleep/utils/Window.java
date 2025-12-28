@@ -13,7 +13,7 @@ import java.lang.reflect.*;
 public class Window implements Listener {
     protected Inventory inventory;
 
-    public Window(AbstractBukkitPlugin plugin) {
+    public Window(BukkitPlugin plugin) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 

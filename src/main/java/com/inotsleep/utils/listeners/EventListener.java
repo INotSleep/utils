@@ -1,6 +1,6 @@
 package com.inotsleep.utils.listeners;
 
-import com.inotsleep.utils.AbstractBukkitPlugin;
+import com.inotsleep.utils.BukkitPlugin;
 import com.inotsleep.utils.events.HookInitEvent;
 import com.inotsleep.utils.hooks.holograms.HologramAPI;
 import com.inotsleep.utils.logging.LoggingManager;
@@ -9,8 +9,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
 
 public class EventListener implements Listener {
-    private AbstractBukkitPlugin plugin;
-    public EventListener(AbstractBukkitPlugin plugin) {
+    private BukkitPlugin plugin;
+    public EventListener(BukkitPlugin plugin) {
         this.plugin = plugin;
     }
 

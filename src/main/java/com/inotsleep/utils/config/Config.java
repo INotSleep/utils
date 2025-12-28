@@ -13,22 +13,22 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
-public abstract class AbstractConfig extends SerializableObject {
+public abstract class Config extends SerializableObject {
     File configFile;
     boolean readOnly;
     InputStream stream;
 
-    public AbstractConfig(File configFile) {
+    public Config(File configFile) {
         this.configFile = configFile;
         this.readOnly = false;
     }
 
-    public AbstractConfig(File baseDir, String fileName) {
+    public Config(File baseDir, String fileName) {
         configFile = new File(baseDir, fileName);
         readOnly = false;
     }
 
-    public AbstractConfig(InputStream stream) {
+    public Config(InputStream stream) {
         readOnly = true;
         this.stream = stream;
     }

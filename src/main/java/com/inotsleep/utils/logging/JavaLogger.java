@@ -1,13 +1,11 @@
 package com.inotsleep.utils.logging;
 
 
-import java.util.logging.Logger;
-
-public class JavaLogger implements ILogger {
+public class JavaLogger implements Logger {
     private static final java.util.logging.Level DEFAULT_LEVEL = java.util.logging.Level.INFO;
-    private final Logger logger;
+    private final java.util.logging.Logger logger;
 
-    public JavaLogger(Logger logger) {
+    public JavaLogger(java.util.logging.Logger logger) {
         this.logger = logger;
     }
 

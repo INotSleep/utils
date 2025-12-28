@@ -1,6 +1,6 @@
 package com.inotsleep.utils.logging;
 
-public interface ILogger {
+public interface Logger {
     void log(String message);
     void log(String message, Throwable throwable);
     void log(Level level, String message);
