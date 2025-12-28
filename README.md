@@ -33,7 +33,7 @@ INSUtils extracts all of that into a reusable library so you can focus on the ac
 - **YAML utilities**  
   Work directly with `SnakeYAML` nodes when you need advanced behavior, without rewriting the same parsing helpers again and again.
 
-![Configuration flow](/api/projects/insutils/assets/config-flow.png?lang={{LANG}})
+![Configuration flow](https://inotsleep.com/api/projects/insutils/assets/config-flow.png?lang=en)
 
 ## Typical use cases
 
