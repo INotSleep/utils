@@ -1,4 +1,4 @@
-package com.inotsleep.utils.i18n.langconfig;
+package com.inotsleep.utils.i18n.config;
 
 import com.inotsleep.utils.config.Config;
 import org.snakeyaml.engine.v2.common.FlowStyle;
@@ -6,6 +6,7 @@ import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.nodes.*;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,11 @@ public class LangFile extends Config {
 
     public LangEntry getEntry(String key) {
         return translations.get(key);
+    }
+
+    public LangFile(File file, Map<String, LangEntry> defaults) {
+        super(file);
+        translations.putAll(defaults);
     }
 
     @Override
@@ -114,5 +120,11 @@ public class LangFile extends Config {
 
     public LangFile(File configFile) {
         super(configFile);
+        reload();
+    }
+
+    public LangFile(InputStream stream) {
+        super(stream);
+        reload();
     }
 }

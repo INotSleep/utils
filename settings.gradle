@@ -12,5 +12,3 @@ pluginManagement {
 }
 
 rootProject.name = 'utils'
-include("base")
-include("1_21_4")

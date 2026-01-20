@@ -29,6 +29,11 @@ public class JavaLogger implements Logger {
         logger.log(convertLevel(level), message, throwable);
     }
 
+    @Override
+    public Logger addPrefix(String prefix) {
+        return new PrefixedLogger(this, prefix);
+    }
+
     private java.util.logging.Level convertLevel(Level level) {
         return switch (level) {
             case TRACE -> java.util.logging.Level.FINE;

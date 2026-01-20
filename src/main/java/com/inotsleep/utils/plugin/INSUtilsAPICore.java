@@ -1,13 +1,15 @@
 package com.inotsleep.utils.plugin;
 
-public class INSUtilsAPICore {
-    private static INSUtilsPlugin instance;
+import com.inotsleep.utils.INSUtils;
 
-    public static INSUtilsPlugin getInstance() {
+public class INSUtilsAPICore {
+    private static INSUtils instance;
+
+    public static INSUtils getInstance() {
         return instance;
     }
 
-    public static void setInstance(INSUtilsPlugin instance) {
+    public static void setInstance(INSUtils instance) {
         INSUtilsAPICore.instance = instance;
     }
 }

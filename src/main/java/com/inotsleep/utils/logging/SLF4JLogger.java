@@ -109,4 +109,9 @@ public class SLF4JLogger implements Logger {
     public void error(String message, Throwable throwable) {
         logger.error(message, throwable);
     }
+
+    @Override
+    public Logger addPrefix(String prefix) {
+        return new PrefixedLogger(this, prefix);
+    }
 }

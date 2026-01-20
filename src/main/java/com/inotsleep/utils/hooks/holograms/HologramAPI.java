@@ -1,6 +1,6 @@
 package com.inotsleep.utils.hooks.holograms;
 
-import com.inotsleep.utils.BukkitPlugin;
+import com.inotsleep.utils.plugin.BukkitPlugin;
 import com.inotsleep.utils.hooks.Hook;
 import com.inotsleep.utils.logging.LoggingManager;
 import org.bukkit.Bukkit;

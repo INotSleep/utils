@@ -1,7 +1,7 @@
 package com.inotsleep.utils.hooks.holograms;
 
 import me.filoghost.holographicdisplays.api.HolographicDisplaysAPI;
-import com.inotsleep.utils.BukkitPlugin;
+import com.inotsleep.utils.plugin.BukkitPlugin;
 import com.inotsleep.utils.hooks.Initializer;
 import org.bukkit.Location;
 
@@ -12,7 +12,7 @@ public class HolographicDisplaysHologramAPI implements HologramAPI {
 
     public HolographicDisplaysHologramAPI(BukkitPlugin plugin) {
         Initializer.callInitEvent(this);
-        api = HolographicDisplaysAPI.get(plugin);
+        api = HolographicDisplaysAPI.get(plugin.getPlugin());
     }
 
     @Override

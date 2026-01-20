@@ -1,4 +1,4 @@
-package com.inotsleep.utils.i18n.langconfig;
+package com.inotsleep.utils.i18n.config;
 
 import java.util.List;
 

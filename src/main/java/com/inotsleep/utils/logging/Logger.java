@@ -45,4 +45,6 @@ public interface Logger {
     default void error(String message, Throwable throwable) {
         log(Level.ERROR, message, throwable);
     }
+
+    Logger addPrefix(String prefix);
 }

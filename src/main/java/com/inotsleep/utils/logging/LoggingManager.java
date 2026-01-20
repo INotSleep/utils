@@ -197,4 +197,11 @@ public final class LoggingManager {
     public static void error(String message, Throwable throwable) {
         log(Level.ERROR, message, throwable);
     }
+
+    public static Logger getPrefixedLogger(String prefix) {
+        Logger logger = resolveLogger();
+        if (logger == null) return null;
+
+        return new PrefixedLogger(logger, prefix);
+    }
 }

@@ -1,5 +1,7 @@
-package com.inotsleep.utils;
+package com.inotsleep.utils.objects;
 
+import com.inotsleep.utils.plugin.BukkitPlugin;
+import com.inotsleep.utils.plugin.BungeePlugin;
 import org.bukkit.command.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -7,28 +9,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Command extends org.bukkit.command.Command {
-    public Command(String prefix, String commandLabel) {
+    public Command(BukkitPlugin plugin, String prefix, String commandLabel) {
         super(commandLabel);
-        BukkitPlugin.commandMap.register(prefix, this);
+        plugin.getCommandMap().register(prefix, this);
     }
 
-    public Command(String prefix, String commandLabel, String permission) {
+    public Command(BukkitPlugin plugin, String prefix, String commandLabel, String permission) {
         super(commandLabel);
         this.setPermission(permission);
-        BukkitPlugin.commandMap.register(prefix, this);
+        plugin.getCommandMap().register(prefix, this);
     }
 
-    public Command(String prefix, String commandLabel, List<String> aliases) {
+    public Command(BukkitPlugin plugin,String prefix, String commandLabel, List<String> aliases) {
         super(commandLabel);
         this.setAliases(aliases);
-        BukkitPlugin.commandMap.register(prefix, this);
+        plugin.getCommandMap().register(prefix, this);
     }
 
-    public Command(String prefix, String commandLabel, String permission, List<String> aliases) {
+    public Command(BukkitPlugin plugin, String prefix, String commandLabel, String permission, List<String> aliases) {
         super(commandLabel);
         this.setAliases(aliases);
         this.setPermission(permission);
-        BukkitPlugin.commandMap.register(prefix, this);
+        plugin.getCommandMap().register(prefix, this);
     }
 
     public abstract void toExecute(CommandSender sender, String label, String[] args);

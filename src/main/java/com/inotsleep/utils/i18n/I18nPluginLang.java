@@ -1,7 +1,7 @@
 package com.inotsleep.utils.i18n;
 
-import com.inotsleep.utils.i18n.langconfig.LangEntry;
-import com.inotsleep.utils.i18n.langconfig.LangFile;
+import com.inotsleep.utils.i18n.config.LangEntry;
+import com.inotsleep.utils.i18n.config.LangFile;
 import com.inotsleep.utils.logging.LoggingManager;
 
 import java.util.HashMap;

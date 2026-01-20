@@ -28,6 +28,11 @@ public class ApacheLog4JLogger implements Logger {
         logger.log(convertLevel(level), message, throwable);
     }
 
+    @Override
+    public Logger addPrefix(String prefix) {
+        return new PrefixedLogger(this, prefix);
+    }
+
     private org.apache.logging.log4j.Level convertLevel(Level level) {
         return switch (level) {
             case TRACE -> org.apache.logging.log4j.Level.TRACE;

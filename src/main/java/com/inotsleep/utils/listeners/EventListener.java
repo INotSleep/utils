@@ -1,6 +1,6 @@
 package com.inotsleep.utils.listeners;
 
-import com.inotsleep.utils.BukkitPlugin;
+import com.inotsleep.utils.plugin.BukkitPlugin;
 import com.inotsleep.utils.events.HookInitEvent;
 import com.inotsleep.utils.hooks.holograms.HologramAPI;
 import com.inotsleep.utils.logging.LoggingManager;

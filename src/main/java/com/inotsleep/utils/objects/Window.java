@@ -1,6 +1,7 @@
-package com.inotsleep.utils;
+package com.inotsleep.utils.objects;
 
 import com.inotsleep.utils.logging.LoggingManager;
+import com.inotsleep.utils.plugin.BukkitPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -14,7 +15,7 @@ public class Window implements Listener {
     protected Inventory inventory;
 
     public Window(BukkitPlugin plugin) {
-        Bukkit.getPluginManager().registerEvents(this, plugin);
+        Bukkit.getPluginManager().registerEvents(this, plugin.getPlugin());
     }
 
     public void unregisterEvents() {

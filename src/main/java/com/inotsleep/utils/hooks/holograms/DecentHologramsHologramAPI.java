@@ -1,7 +1,7 @@
 package com.inotsleep.utils.hooks.holograms;
 
 import eu.decentsoftware.holograms.api.DHAPI;
-import com.inotsleep.utils.BukkitPlugin;
+import com.inotsleep.utils.plugin.BukkitPlugin;
 import com.inotsleep.utils.hooks.Initializer;
 import org.bukkit.Location;
 
