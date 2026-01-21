@@ -70,105 +70,105 @@ jobs:
           path: build/libs/*.jar
           if-no-files-found: error
 
-      - name: Generate usage instructions (Gradle/Maven)
-        id: usage
-        run: |
-          set -euo pipefail
-
-          GROUP="com.inotsleep"
-          ARTIFACT="insutils"
-          REPO_URL="https://nexus.inotsleep.com/repository/maven-public/"
-          CLASSIFIER="${{ steps.vars.outputs.classifier }}"
-
-          JAR=$(ls build/libs/${ARTIFACT}-*.jar | head -n1)
-          FILE=$(basename "$JAR")
-
-          if [ -n "$CLASSIFIER" ] && [[ "$FILE" == *"-${CLASSIFIER}.jar" ]]; then
-            VERSION="${FILE#${ARTIFACT}-}"
-            VERSION="${VERSION%-${CLASSIFIER}.jar}"
-          else
-            VERSION="${FILE#${ARTIFACT}-}"
-            VERSION="${VERSION%.jar}"
-          fi
-
-          if [ -n "$CLASSIFIER" ]; then
-            GRADLE_SNIPPET=$(cat <<EOF
-          repositories {
-              maven { url "$REPO_URL" }
-          }
-          dependencies {
-              compileOnly("$GROUP:$ARTIFACT:$VERSION:$CLASSIFIER")
-          }
-          EOF
-          )
-                      MAVEN_SNIPPET=$(cat <<'EOF'
-          <repositories>
-            <repository>
-              <id>inotsleep-nexus</id>
-              <url>https://nexus.inotsleep.com/repository/maven-public/</url>
-            </repository>
-          </repositories>
-          
-          <dependencies>
-            <dependency>
-              <groupId>com.inotsleep</groupId>
-              <artifactId>insutils</artifactId>
-              <version>__VERSION__</version>
-              <classifier>__CLASSIFIER__</classifier>
-              <scope>provided</scope>
-            </dependency>
-          </dependencies>
-          EOF
-          )
-                      MAVEN_SNIPPET="${MAVEN_SNIPPET/__VERSION__/$VERSION}"
-                      MAVEN_SNIPPET="${MAVEN_SNIPPET/__CLASSIFIER__/$CLASSIFIER}"
-                    else
-                      GRADLE_SNIPPET=$(cat <<EOF
-          repositories {
-              maven { url "$REPO_URL" }
-          }
-          dependencies {
-              compileOnly("$GROUP:$ARTIFACT:$VERSION")
-          }
-          EOF
-          )
-                      MAVEN_SNIPPET=$(cat <<'EOF'
-          <repositories>
-            <repository>
-              <id>inotsleep-nexus</id>
-              <url>https://nexus.inotsleep.com/repository/maven-a4public/</url>
-            </repository>
-          </repositories>
-          
-          <dependencies>
-            <dependency>
-              <groupId>com.inotsleep</groupId>
-              <artifactId>insutils</artifactId>
-              <version>__VERSION__</version>
-              <scope>provided</scope>
-            </dependency>
-          </dependencies>
-          EOF
-          )
-            MAVEN_SNIPPET="${MAVEN_SNIPPET/__VERSION__/$VERSION}"
-          fi
-
-          echo "$GRADLE_SNIPPET" > usage-gradle.txt
-          echo "$MAVEN_SNIPPET"  > usage-maven.xml
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-          {
-            echo "## How to use this build"
-            echo ""
-            echo "**Coordinates:** \`$GROUP:$ARTIFACT:$VERSION\`${CLASSIFIER:+, classifier \`$CLASSIFIER\`}"
-            echo ""
-            echo "### Gradle"
-            echo '```gradle'
-            echo "$GRADLE_SNIPPET"
-            echo '```'
-            echo ""
-            echo "### Maven"
-            echo '```xml'
-            echo "$MAVEN_SNIPPET"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+#      - name: Generate usage instructions (Gradle/Maven)
+#        id: usage
+#        run: |
+#          set -euo pipefail
+#
+#          GROUP="com.inotsleep"
+#          ARTIFACT="insutils"
+#          REPO_URL="https://nexus.inotsleep.com/repository/maven-public/"
+#          CLASSIFIER="${{ steps.vars.outputs.classifier }}"
+#
+#          JAR=$(ls build/libs/${ARTIFACT}-*.jar | head -n1)
+#          FILE=$(basename "$JAR")
+#
+#          if [ -n "$CLASSIFIER" ] && [[ "$FILE" == *"-${CLASSIFIER}.jar" ]]; then
+#            VERSION="${FILE#${ARTIFACT}-}"
+#            VERSION="${VERSION%-${CLASSIFIER}.jar}"
+#          else
+#            VERSION="${FILE#${ARTIFACT}-}"
+#            VERSION="${VERSION%.jar}"
+#          fi
+#
+#          if [ -n "$CLASSIFIER" ]; then
+#            GRADLE_SNIPPET=$(cat <<EOF
+#          repositories {
+#              maven { url "$REPO_URL" }
+#          }
+#          dependencies {
+#              compileOnly("$GROUP:$ARTIFACT:$VERSION:$CLASSIFIER")
+#          }
+#          EOF
+#          )
+#                      MAVEN_SNIPPET=$(cat <<'EOF'
+#          <repositories>
+#            <repository>
+#              <id>inotsleep-nexus</id>
+#              <url>https://nexus.inotsleep.com/repository/maven-public/</url>
+#            </repository>
+#          </repositories>
+#
+#          <dependencies>
+#            <dependency>
+#              <groupId>com.inotsleep</groupId>
+#              <artifactId>insutils</artifactId>
+#              <version>__VERSION__</version>
+#              <classifier>__CLASSIFIER__</classifier>
+#              <scope>provided</scope>
+#            </dependency>
+#          </dependencies>
+#          EOF
+#          )
+#                      MAVEN_SNIPPET="${MAVEN_SNIPPET/__VERSION__/$VERSION}"
+#                      MAVEN_SNIPPET="${MAVEN_SNIPPET/__CLASSIFIER__/$CLASSIFIER}"
+#                    else
+#                      GRADLE_SNIPPET=$(cat <<EOF
+#          repositories {
+#              maven { url "$REPO_URL" }
+#          }
+#          dependencies {
+#              compileOnly("$GROUP:$ARTIFACT:$VERSION")
+#          }
+#          EOF
+#          )
+#                      MAVEN_SNIPPET=$(cat <<'EOF'
+#          <repositories>
+#            <repository>
+#              <id>inotsleep-nexus</id>
+#              <url>https://nexus.inotsleep.com/repository/maven-a4public/</url>
+#            </repository>
+#          </repositories>
+#
+#          <dependencies>
+#            <dependency>
+#              <groupId>com.inotsleep</groupId>
+#              <artifactId>insutils</artifactId>
+#              <version>__VERSION__</version>
+#              <scope>provided</scope>
+#            </dependency>
+#          </dependencies>
+#          EOF
+#          )
+#            MAVEN_SNIPPET="${MAVEN_SNIPPET/__VERSION__/$VERSION}"
+#          fi
+#
+#          echo "$GRADLE_SNIPPET" > usage-gradle.txt
+#          echo "$MAVEN_SNIPPET"  > usage-maven.xml
+#          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+#
+#          {
+#            echo "## How to use this build"
+#            echo ""
+#            echo "**Coordinates:** \`$GROUP:$ARTIFACT:$VERSION\`${CLASSIFIER:+, classifier \`$CLASSIFIER\`}"
+#            echo ""
+#            echo "### Gradle"
+#            echo '```gradle'
+#            echo "$GRADLE_SNIPPET"
+#            echo '```'
+#            echo ""
+#            echo "### Maven"
+#            echo '```xml'
+#            echo "$MAVEN_SNIPPET"
+#            echo '```'
+#          } >> "$GITHUB_STEP_SUMMARY"
