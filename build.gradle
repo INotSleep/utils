@@ -11,42 +11,18 @@ version = '2.0.0'
 
 repositories {
     mavenCentral()
-    maven {
-        name = "papermc-repo"
-        url = "https://repo.papermc.io/repository/maven-public/"
-    }
-    maven {
-        name = "sonatype"
-        url = "https://oss.sonatype.org/content/groups/public/"
-    }
-    maven {
-        url "https://repo.codemc.io/repository/maven-public/"
-    }
-    maven {
-        url = "https://jitpack.io/"
-    }
-    maven {
-        url = "https://hub.spigotmc.org/nexus/content/groups/public/"
-    }
 }
 
 configurations {
-    shadow
+    shadow {
+        transitive = false
+    }
+
+    transitiveShadow
 }
 
 dependencies {
-    shadow "org.bstats:bstats-bukkit:3.1.0"
-    shadow "org.bstats:bstats-bungeecord:3.1.0"
-    shadow "org.snakeyaml:snakeyaml-engine:2.9"
-    shadow "com.google.code.gson:gson:2.13.2"
-
-    compileOnly "org.xerial:sqlite-jdbc:3.43.2.1"
-    compileOnly "com.google.guava:guava:12+"
-    compileOnly 'me.filoghost.holographicdisplays:holographicdisplays-api:3.0.0'
-    compileOnly "com.github.decentsoftware-eu:decentholograms:2.8.9"
-    compileOnly "org.apache.logging.log4j:log4j-api:2.24.3"
-    compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
-    compileOnly 'net.md-5:bungeecord-api:1.21-R0.5-SNAPSHOT'
+    shadow project(path: ":core", configuration: "shadow")
 }
 
 def isCI   = System.getenv("CI") == "true"
@@ -59,16 +35,11 @@ if (isCI && !gitRef.startsWith("refs/tags/") && !version.endsWith("-SNAPSHOT")) 
 def extBuildClassifier = (findProperty("buildClassifier") as String) ?: ""
 
 shadowJar {
-    configurations = [project.configurations.shadow]
+    configurations = [project.configurations.shadow, project.configurations.transitiveShadow]
     dependsOn(tasks.named('jar'))
 
-    archiveBaseName = "utils"
+    archiveBaseName = "INSUtils"
     archiveClassifier = extBuildClassifier
-
-    relocate("org.bstats", "com.inotsleep.utils.relocated.org.bstats")
-    relocate("org.snakeyaml", "com.inotsleep.utils.relocated.org.snakeyaml")
-    relocate("com.google.gson", "com.inotsleep.utils.relocated.com.google.gson")
-    relocate("com.google.errorprone", "com.inotsleep.utils.relocated.com.google.errorprone")
 }
 
 def targetJavaVersion = 21
@@ -102,7 +73,7 @@ publishing {
             artifact shadowJar
 
             groupId = project.group
-            artifactId = "utils"
+            artifactId = "insutils"
             version = project.version
 
         }
@@ -122,4 +93,12 @@ publishing {
             }
         }
     }
+}
+
+tasks.named("jar") {
+    enabled = false
+}
+
+tasks.named("assemble") {
+    dependsOn(tasks.named("shadowJar"))
 }

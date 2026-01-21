@@ -66,7 +66,7 @@ jobs:
       - name: Upload JARs
         uses: actions/upload-artifact@v4
         with:
-          name: utils-${{ steps.vars.outputs.classifier }}
+          name: INSUtils-${{ steps.vars.outputs.classifier }}
           path: build/libs/*.jar
           if-no-files-found: error
 
@@ -76,7 +76,7 @@ jobs:
           set -euo pipefail
 
           GROUP="com.inotsleep"
-          ARTIFACT="utils"
+          ARTIFACT="insutils"
           REPO_URL="https://nexus.inotsleep.com/repository/maven-public/"
           CLASSIFIER="${{ steps.vars.outputs.classifier }}"
 
@@ -97,7 +97,7 @@ jobs:
               maven { url "$REPO_URL" }
           }
           dependencies {
-              implementation("$GROUP:$ARTIFACT:$VERSION:$CLASSIFIER")
+              compileOnly("$GROUP:$ARTIFACT:$VERSION:$CLASSIFIER")
           }
           EOF
           )
@@ -112,9 +112,10 @@ jobs:
           <dependencies>
             <dependency>
               <groupId>com.inotsleep</groupId>
-              <artifactId>utils</artifactId>
+              <artifactId>insutils</artifactId>
               <version>__VERSION__</version>
               <classifier>__CLASSIFIER__</classifier>
+              <scope>provided</scope>
             </dependency>
           </dependencies>
           EOF
@@ -127,7 +128,7 @@ jobs:
               maven { url "$REPO_URL" }
           }
           dependencies {
-              implementation("$GROUP:$ARTIFACT:$VERSION")
+              compileOnly("$GROUP:$ARTIFACT:$VERSION")
           }
           EOF
           )
@@ -142,8 +143,9 @@ jobs:
           <dependencies>
             <dependency>
               <groupId>com.inotsleep</groupId>
-              <artifactId>utils</artifactId>
+              <artifactId>insutils</artifactId>
               <version>__VERSION__</version>
+              <scope>provided</scope>
             </dependency>
           </dependencies>
           EOF

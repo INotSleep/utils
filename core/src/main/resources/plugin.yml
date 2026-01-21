@@ -1,0 +1,6 @@
+name: INSUtils
+description: Small Util api for plugins
+version: ${version}
+main: com.inotsleep.utils.plugin.INSUtilsBukkitPlugin
+api-version: 1.21
+author: INotSleep

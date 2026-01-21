@@ -11,4 +11,6 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'utils'
+rootProject.name = 'INSUtils'
+include(":api")
+include(":core")
