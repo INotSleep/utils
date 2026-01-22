@@ -6,11 +6,17 @@ plugins {
 
 apply plugin: 'java'
 
+group = property("group")
+version = property("version")
+
 repositories {
     mavenCentral()
     maven {
         name = "papermc-repo"
         url = "https://repo.papermc.io/repository/maven-public/"
+    }
+    maven {
+        url = "https://hub.spigotmc.org/nexus/content/groups/public/"
     }
     maven {
         name = "sonatype"
@@ -22,9 +28,6 @@ repositories {
     maven {
         url = "https://jitpack.io/"
     }
-    maven {
-        url = "https://hub.spigotmc.org/nexus/content/groups/public/"
-    }
 }
 
 configurations {
@@ -32,7 +35,7 @@ configurations {
 }
 
 dependencies {
-    shadow project(":api")
+    shadow project(path: ":api", configuration: "shadow")
     shadow "org.bstats:bstats-bukkit:3.1.0"
     shadow "org.bstats:bstats-bungeecord:3.1.0"
     shadow "org.snakeyaml:snakeyaml-engine:2.9"
@@ -53,12 +56,24 @@ shadowJar {
 
     archiveClassifier = ""
 
-    relocate("org.bstats", "com.inotsleep.utils.relocated.org.bstats")
-    relocate("org.snakeyaml", "com.inotsleep.utils.relocated.org.snakeyaml")
-    relocate("com.google.gson", "com.inotsleep.utils.relocated.com.google.gson")
-    relocate("com.google.errorprone", "com.inotsleep.utils.relocated.com.google.errorprone")
+    relocate("org.bstats", "com.inotsleep.insutils.internal.relocated.org.bstats")
+    relocate("org.snakeyaml", "com.inotsleep.insutils.internal.relocated.org.snakeyaml")
+    relocate("com.google.gson", "com.inotsleep.insutils.internal.relocated.com.google.gson")
+    relocate("com.google.errorprone", "com.inotsleep.insutils.internal.relocated.com.google.errorprone")
 }
 
 tasks.named("build") {
     dependsOn(shadowJar)
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
+    }
+    filesMatching('bungee.yml') {
+        expand props
+    }
 }

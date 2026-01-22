@@ -73,7 +73,7 @@ publishing {
             artifact shadowJar
 
             groupId = project.group
-            artifactId = "insutils"
+            artifactId = "insutils-plugin"
             version = project.version
 
         }

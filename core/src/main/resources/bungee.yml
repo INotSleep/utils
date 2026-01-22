@@ -1,5 +1,5 @@
 name: INSUtils
 description: Small Util api for plugins
 version: ${version}
-main: com.inotsleep.utils.plugin.INSUtilsBungeePlugin
+main: com.inotsleep.insutils.internal.plugin.INSUtilsBungeePlugin
 author: INotSleep

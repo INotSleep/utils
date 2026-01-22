@@ -6,3 +6,79 @@ plugins {
 
 apply plugin: 'java'
 
+group = property("group")
+version = property("version")
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "papermc-repo"
+        url = "https://repo.papermc.io/repository/maven-public/"
+    }
+    maven {
+        url = "https://hub.spigotmc.org/nexus/content/groups/public/"
+    }
+}
+
+configurations {
+    shadow {
+        transitive = false
+    }
+
+    transitiveShadow
+}
+
+dependencies {
+    compileOnly "org.snakeyaml:snakeyaml-engine:2.9"
+    compileOnly "org.jetbrains:annotations:26.0.2-1"
+    compileOnly "org.bstats:bstats-bukkit:3.1.0"
+    compileOnly "org.bstats:bstats-bungeecord:3.1.0"
+
+    compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
+    compileOnly 'net.md-5:bungeecord-api:1.21-R0.5-SNAPSHOT'
+}
+
+def isCI   = System.getenv("CI") == "true"
+def gitRef = System.getenv("GITHUB_REF") ?: ""
+
+if (isCI && !gitRef.startsWith("refs/tags/") && !version.endsWith("-SNAPSHOT")) {
+    version = "${version}-SNAPSHOT"
+}
+
+def extBuildClassifier = (findProperty("buildClassifier") as String) ?: ""
+
+shadowJar {
+    configurations = [project.configurations.shadow, project.configurations.transitiveShadow]
+    dependsOn(tasks.named('jar'))
+
+    archiveBaseName = "INSUtils-api"
+    archiveClassifier = extBuildClassifier
+}
+
+publishing {
+    publications {
+        shadow(MavenPublication) {
+            artifact shadowJar
+
+            groupId = project.group
+            artifactId = "insutils-api"
+            version = project.version
+
+        }
+    }
+
+    repositories {
+        maven {
+            name = "inotsleep-nexus"
+            url = uri(
+                    version.endsWith("-SNAPSHOT")
+                            ? "https://nexus.inotsleep.com/repository/maven-snapshots/"
+                            : "https://nexus.inotsleep.com/repository/maven-releases/"
+            )
+            credentials {
+                username = System.getenv("NEXUS_USER")
+                password = System.getenv("NEXUS_PASSWORD")
+            }
+        }
+    }
+}
