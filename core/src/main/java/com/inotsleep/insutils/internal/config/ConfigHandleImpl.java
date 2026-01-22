@@ -19,6 +19,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -54,9 +55,10 @@ public class ConfigHandleImpl implements ConfigHandle {
 
             Object fieldValue;
             try {
-                boolean accessible = field.canAccess(target);
+                Object receiver = Modifier.isStatic(field.getModifiers()) ? null : target;
+                boolean accessible = field.canAccess(receiver);
                 field.setAccessible(true);
-                fieldValue = field.get(target);
+                fieldValue = field.get(receiver);
                 field.setAccessible(accessible);
             } catch (IllegalAccessException e) {
                 LoggingManager.error("Unable to access field value", e);
