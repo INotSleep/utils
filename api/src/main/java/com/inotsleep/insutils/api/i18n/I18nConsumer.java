@@ -10,5 +10,9 @@ public interface I18nConsumer {
     String getString(String key, String lang);
     List<String> getStringList(String key, String lang);
 
+    LangEntry getEntry(String key);
+    String getString(String key);
+    List<String> getStringList(String key);
+
     InputStream getResource(String s);
 }

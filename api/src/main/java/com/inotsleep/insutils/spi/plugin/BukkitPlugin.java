@@ -7,6 +7,7 @@ import com.inotsleep.insutils.api.logging.LoggingManager;
 import com.inotsleep.insutils.api.plugin.INSBukkitPlugin;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandMap;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -71,6 +72,42 @@ public abstract class BukkitPlugin extends JavaPlugin implements INSBukkitPlugin
         I18n i18n = I18n.getInstance();
         
         return i18n.getStringList(key, lang, getSlug());
+    }
+
+    public LangEntry getEntry(String key) {
+        I18n i18n = I18n.getInstance();
+
+        return i18n.getEntry(key, I18n.getInstance().getDefaultLang(), getSlug());
+    }
+
+    public String getString(String key) {
+        I18n i18n = I18n.getInstance();
+
+        return i18n.getString(key, I18n.getInstance().getDefaultLang(), getSlug());
+    }
+
+    public List<String> getStringList(String key) {
+        I18n i18n = I18n.getInstance();
+
+        return i18n.getStringList(key, I18n.getInstance().getDefaultLang(), getSlug());
+    }
+
+    public LangEntry getEntry(String key, OfflinePlayer player) {
+        I18n i18n = I18n.getInstance();
+
+        return i18n.getEntry(key, I18n.getInstance().getPlayerLang(player.getUniqueId()), getSlug());
+    }
+
+    public String getString(String key, OfflinePlayer player) {
+        I18n i18n = I18n.getInstance();
+
+        return i18n.getString(key, I18n.getInstance().getPlayerLang(player.getUniqueId()), getSlug());
+    }
+
+    public List<String> getStringList(String key, OfflinePlayer player) {
+        I18n i18n = I18n.getInstance();
+
+        return i18n.getStringList(key, I18n.getInstance().getPlayerLang(player.getUniqueId()), getSlug());
     }
 
     public CommandMap getCommandMap() {

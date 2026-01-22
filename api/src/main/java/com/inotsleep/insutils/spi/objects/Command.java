@@ -1,4 +1,4 @@
-package com.inotsleep.insutils.api.objects;
+package com.inotsleep.insutils.spi.objects;
 
 import com.inotsleep.insutils.spi.plugin.BukkitPlugin;
 import org.bukkit.command.*;

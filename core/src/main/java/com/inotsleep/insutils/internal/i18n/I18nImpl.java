@@ -10,6 +10,7 @@ import com.inotsleep.insutils.internal.i18n.config.LangFile;
 import com.inotsleep.insutils.api.logging.LoggingManager;
 import com.inotsleep.insutils.api.INSUtils;
 import com.inotsleep.insutils.api.objects.Pair;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -152,6 +153,16 @@ public class I18nImpl implements I18n {
         }
 
         return entry.getListValue();
+    }
+
+    @Override
+    public String getDefaultLang() {
+        return config.getDefaultLanguage();
+    }
+
+    @Override
+    public String getPlayerLang(UUID player) {
+        return getDefaultLang();
     }
 
     public void reload() {

@@ -1,5 +1,6 @@
 package com.inotsleep.insutils.api.i18n;
 
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,6 +26,9 @@ public interface I18n {
     @Nullable LangEntry getEntry(String key, String lang, String plugin);
     @NotNull String getString(String key, String lang, String plugin);
     @NotNull List<String> getStringList(String key, String lang, String plugin);
+
+    String getDefaultLang();
+    String getPlayerLang(UUID player);
 
     @ApiStatus.Experimental
     void reload();
