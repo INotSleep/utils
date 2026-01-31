@@ -13,6 +13,7 @@ import com.inotsleep.insutils.api.objects.Pair;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 
 public class I18nImpl implements I18n {
     private static final String API_ENDPOINT_HOST = "https://inotsleep.com/";
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(I18nImpl.class);
     private static I18nImpl instance;
 
     private final INSUtils plugin;
@@ -166,12 +168,14 @@ public class I18nImpl implements I18n {
     }
 
     public void reload() {
+        logger.info("Loading...");
         if (reloadBlocked.getAndSet(true)) {
             throw new IllegalStateException("Called while blocked reload");
         }
 
         try {
             reloadUnsafe();
+            logger.info("Successfully loaded!");
         } finally {
             reloadBlocked.set(false);
         }
@@ -303,9 +307,9 @@ public class I18nImpl implements I18n {
 
     public static void init(INSUtils plugin) {
         I18nImpl i18n = new I18nImpl(plugin);
-
         I18n.setInstance(i18n);
-        i18n.reload();
+
+        instance.logger.info("Initialized successfully");
     }
 
     public I18nConfig getConfig() {

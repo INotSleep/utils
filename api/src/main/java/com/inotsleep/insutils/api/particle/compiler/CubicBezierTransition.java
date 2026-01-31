@@ -1,26 +1,23 @@
 package com.inotsleep.insutils.api.particle.compiler;
 
-public class CubicBezierTransition {
+import com.inotsleep.insutils.api.config.Path;
+import com.inotsleep.insutils.spi.config.SerializableObject;
 
-    private final double x1, y1, x2, y2;
-    public String raw;
+public class CubicBezierTransition extends SerializableObject {
+
+    @Path("x1")
+    private double x1;
+    @Path("y1")
+    private double y1;
+    @Path("x2")
+    private double x2;
+    @Path("y2")
+    private double y2;
+
+    @Path("is-instant")
     private boolean instant;
 
-    public CubicBezierTransition(String raw) {
-        this.raw = raw;
-        String[] parts = raw.split(",");
-        if (parts.length != 4) {
-            x1 = 0;
-            y1 = 0;
-            x2 = 0;
-            y2 = 0;
-            instant = true;
-            return;
-        }
-        x1 = Double.parseDouble(parts[0]);
-        y1 = Double.parseDouble(parts[1]);
-        x2 = Double.parseDouble(parts[2]);
-        y2 = Double.parseDouble(parts[3]);
+    public CubicBezierTransition() {
     }
 
     public CubicBezierTransition(double x1, double y1, double x2, double y2, boolean instant) {

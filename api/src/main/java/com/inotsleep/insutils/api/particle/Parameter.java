@@ -67,12 +67,10 @@ public class Parameter extends SerializableObject {
 
     @Comment("Particle type.")
     @Path("particle")
-    private String particleName;
     public Particle particle;
 
     @Comment("Material associated with the particle.")
     @Path("data")
-    private String materialName;
     public Material data;
 
     @Comment("Red color component (0-255).")
@@ -130,23 +128,11 @@ public class Parameter extends SerializableObject {
         this.rotationY = rotationY;
         this.rotationZ = rotationZ;
         this.particle = particle;
-        this.particleName = particle.name();
         this.data = material;
-        this.materialName = material.name();
         this.r = r;
         this.g = g;
         this.b = b;
         this.l = l;
-    }
-
-    public void mutateDeserialization() {
-        this.particle = Particle.valueOf(particleName.toUpperCase());
-        this.data = Material.matchMaterial(materialName.toUpperCase());
-    }
-
-    public void mutateSerialization() {
-        this.particleName = particle.name();
-        this.materialName = data.name();
     }
 
     public enum Type {

@@ -14,7 +14,12 @@ public interface ConnectionHandler {
     }
 
     static void setInstance(ConnectionHandler instance) {
-        ConnectionHandler.instance.set(instance);
+        if (instance == null) {
+            throw new NullPointerException("instance");
+        }
+        if (!ConnectionHandler.instance.compareAndSet(null, instance)) {
+            throw new IllegalStateException("ConnectionHandler instance already set");
+        }
     }
 
 

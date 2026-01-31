@@ -1,5 +1,7 @@
 package com.inotsleep.insutils.api.hooks.holograms;
 
+import com.inotsleep.insutils.api.INSUtils;
+
 import java.util.concurrent.atomic.AtomicReference;
 
 public interface HologramAPIHolder {
@@ -10,7 +12,12 @@ public interface HologramAPIHolder {
     }
     
     static void setInstance(HologramAPIHolder instance) {
-        HologramAPIHolder.instance.set(instance);
+        if (instance == null) {
+            throw new NullPointerException("instance");
+        }
+        if (!HologramAPIHolder.instance.compareAndSet(null, instance)) {
+            throw new IllegalStateException("HologramAPIHolder instance already set");
+        }
     }
 
     HologramAPI getHologramAPI();

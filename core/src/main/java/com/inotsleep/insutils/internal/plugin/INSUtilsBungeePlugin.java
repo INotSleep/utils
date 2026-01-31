@@ -12,6 +12,7 @@ import com.inotsleep.insutils.internal.i18n.I18nImpl;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
@@ -45,10 +46,13 @@ public class INSUtilsBungeePlugin extends BungeePlugin implements INSUtils {
     public void doLoad() {
         instance = this;
         INSUtils.setInstance(this);
+        bungeePlugins = new ArrayList<>();
+
+        I18nImpl.init(getInstance());
+        I18n.getInstance().registerConsumer(getInstance());
 
         executor.execute(() -> {
-            I18nImpl.init(getInstance());
-            I18n.getInstance().registerConsumer(getInstance());
+            I18n.getInstance().reload();
         });
     }
 

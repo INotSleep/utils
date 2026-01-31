@@ -52,10 +52,11 @@ public class INSUtilsBukkitPlugin extends BukkitPlugin implements INSUtils {
 
         INSUtils.setInstance(this);
         bukkitPlugins = new ArrayList<>();
+        I18nImpl.init(getInstance());
+        I18n.getInstance().registerConsumer(getInstance());
 
         executor.execute(() -> {
-            I18nImpl.init(getInstance());
-            I18n.getInstance().registerConsumer(getInstance());
+            I18n.getInstance().reload();
         });
     }
 

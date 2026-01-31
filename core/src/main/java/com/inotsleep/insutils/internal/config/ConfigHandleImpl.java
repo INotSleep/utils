@@ -21,12 +21,18 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ConfigHandleImpl implements ConfigHandle {
+    CodecRegistry registry;
+
+    public ConfigHandleImpl() {
+        registry = new CodecRegistry();
+    }
 
     private void serialize(UnsafeSerializableObject target, MappingNode node) {
         target.beforeSerialization(node);
@@ -68,7 +74,7 @@ public class ConfigHandleImpl implements ConfigHandle {
                 continue;
             }
 
-            Node valueNode = serializeValue(fieldValue);
+            Node valueNode = serializeValue(field.getGenericType(), fieldValue);
 
             if (valueNode != null) {
                 Node commentNode = (valueNode instanceof ScalarNode) ? valueNode : keyNode;
@@ -118,8 +124,6 @@ public class ConfigHandleImpl implements ConfigHandle {
         }
 
         for (Field field: allFields) {
-            field.setAccessible(true);
-
             Path path = field.getAnnotation(Path.class);
             if (path == null) {
                 continue;
@@ -130,12 +134,15 @@ public class ConfigHandleImpl implements ConfigHandle {
             if (fieldNode == null) {
                 continue;
             }
-
             try {
+                Object receiver = Modifier.isStatic(field.getModifiers()) ? null : target;
+                boolean accessible = field.canAccess(receiver);
+                field.setAccessible(true);
                 Object deserialized = deserializeField(field, fieldNode, key);
                 if (deserialized != null) {
                     field.set(target, deserialized);
                 }
+                field.setAccessible(accessible);
             } catch (IllegalAccessException e) {
                 LoggingManager.error("Unable to set field value", e);
             }
@@ -162,7 +169,7 @@ public class ConfigHandleImpl implements ConfigHandle {
             commentList.addAll(
                     Arrays
                             .stream(comments.value())
-                            .collect(Collectors.toList())
+                            .toList()
             );
         }
 
@@ -195,7 +202,7 @@ public class ConfigHandleImpl implements ConfigHandle {
         valueNode.setInLineComments(inlineLines);
     }
 
-    private Node serializeValue(Object value) {
+    private Node serializeValue(Type type, Object value) {
         switch (value) {
             case UnsafeSerializableObject serializableObject -> {
                 MappingNode childNode = new MappingNode(Tag.MAP, new ArrayList<>(), FlowStyle.AUTO);
@@ -203,23 +210,27 @@ public class ConfigHandleImpl implements ConfigHandle {
                 return childNode;
             }
             case Map<?, ?> map -> {
-                return serializeMap(map);
+                return serializeMap(type, map);
             }
             case Collection<?> collection -> {
-                return serializeCollection(collection);
+                return serializeCollection(type, collection);
             }
             case null, default -> {
+                Optional<Codec<?>> optionalCodec = registry.find(type);
+                if (optionalCodec.isPresent()) {
+                    return optionalCodec.get().serializeAny(value);
+                }
                 return serializePrimitive(value, true);
             }
         }
     }
 
-    private MappingNode serializeMap(Map < ? , ? > map) {
+    private MappingNode serializeMap(Type type, Map < ? , ? > map) {
         List < NodeTuple > tuples = new ArrayList < > ();
         for (Map.Entry < ? , ? > entry : map.entrySet()) {
             Node keyNode = serializePrimitive(entry.getKey(), false);
 
-            Node valNode = serializeValue(entry.getValue());
+            Node valNode = serializeValue(type, entry.getValue());
 
             NodeTuple tuple = new NodeTuple(keyNode, valNode);
             tuples.add(tuple);
@@ -227,10 +238,10 @@ public class ConfigHandleImpl implements ConfigHandle {
         return new MappingNode(Tag.MAP, tuples, FlowStyle.AUTO);
     }
 
-    private SequenceNode serializeCollection(Collection < ? > collection) {
+    private SequenceNode serializeCollection(Type type, Collection < ? > collection) {
         List < Node > nodes = new ArrayList < > ();
         for (Object item: collection) {
-            nodes.add(serializeValue(item));
+            nodes.add(serializeValue(type, item));
         }
         return new SequenceNode(Tag.SEQ, nodes, FlowStyle.AUTO);
     }
@@ -276,13 +287,11 @@ public class ConfigHandleImpl implements ConfigHandle {
         return new ScalarNode(Tag.STR, value.toString(), quoteStrings ? ScalarStyle.DOUBLE_QUOTED : ScalarStyle.PLAIN);
     }
 
-
     private Object deserializeField(Field field, Node node, String key) {
-        Class < ? > fieldType = field.getType();
-        return deserializeFieldByType(fieldType, field.getGenericType(), node, key);
+        return deserializeValue(field.getType(), field.getGenericType(), node, key);
     }
 
-    private Object deserializeFieldByType(Class < ? > type, java.lang.reflect.Type genericType, Node node, String key) {
+    private Object deserializeValue(Class < ? > type, Type genericType, Node node, String key) {
         if (UnsafeSerializableObject.class.isAssignableFrom(type)) {
             if (!(node instanceof MappingNode)) {
                 LoggingManager.warn("Expected MappingNode for object '" + key + "' but found " + node.getNodeType());
@@ -317,10 +326,10 @@ public class ConfigHandleImpl implements ConfigHandle {
 
         if (type.isPrimitive() ||
                 Number.class.isAssignableFrom(type) ||
-                type.equals(String.class) ||
-                type.equals(Character.class) ||
-                type.equals(Boolean.class)) {
-
+                String.class.isAssignableFrom(type) ||
+                Character.class.isAssignableFrom(type) ||
+                Boolean.class.isAssignableFrom(type)
+        ) {
             if (!(node instanceof ScalarNode)) {
                 LoggingManager.warn("Expected ScalarNode for primitive '" + key + "' but found " + node.getNodeType());
                 return null;
@@ -328,7 +337,12 @@ public class ConfigHandleImpl implements ConfigHandle {
             return deserializePrimitive(type, (ScalarNode) node);
         }
 
-        LoggingManager.warn("Unsupported field type: " + type.getName() + ". Will treat as string.");
+        Optional<Codec<?>> optionalCodec = registry.find(genericType);
+        if (optionalCodec.isPresent()) {
+            return optionalCodec.get().deserializeAny(node);
+        }
+
+        LoggingManager.warn("Unsupported field type: " + type.getName() + " (" + key + "). Will treat as string.");
         if (node instanceof ScalarNode) {
             return ((ScalarNode) node).getValue();
         }
@@ -346,42 +360,43 @@ public class ConfigHandleImpl implements ConfigHandle {
         return null;
     }
 
-    private Map < Object, Object > deserializeMap(MappingNode node, java.lang.reflect.Type genericType) {
-        Class < ? > keyClass = Object.class;
-        Class < ? > valClass = Object.class;
-        java.lang.reflect.Type valGenType = null;
+    private Map<Object, Object> deserializeMap(MappingNode node, Type genericType) {
+        Class<?> keyClass = Object.class;
+        Class<?> valClass = Object.class;
+
+        Type keyGenType = null;
+        Type valGenType = null;
 
         if (genericType instanceof ParameterizedType pt) {
-            java.lang.reflect.Type kType = pt.getActualTypeArguments()[0];
-            java.lang.reflect.Type vType = pt.getActualTypeArguments()[1];
+            Type kType = pt.getActualTypeArguments()[0];
+            Type vType = pt.getActualTypeArguments()[1];
 
-            if (kType instanceof Class) {
-                keyClass = (Class < ? > ) kType;
-            }
+            keyGenType = kType;
             valGenType = vType;
-            if (vType instanceof Class) {
-                valClass = (Class < ? > ) vType;
-            }
+
+            keyClass = rawClassOf(kType);
+            valClass = rawClassOf(vType);
         }
 
-        Map < Object, Object > map = new LinkedHashMap < > ();
-        for (NodeTuple tuple: node.getValue()) {
+        Map<Object, Object> map = new LinkedHashMap<>();
+        for (NodeTuple tuple : node.getValue()) {
             Node kNode = tuple.getKeyNode();
             Node vNode = tuple.getValueNode();
 
-            Object mapKey = deserializeFieldByType(keyClass, keyClass, kNode, "map-key");
-            Object mapValue = deserializeFieldByType(valClass, valGenType, vNode, "map-value");
+            Object mapKey = deserializeValue(keyClass, keyGenType, kNode, "map-key");
+            Object mapValue = deserializeValue(valClass, valGenType, vNode, "map-value");
             map.put(mapKey, mapValue);
         }
+
         return map;
     }
 
-    private Collection < Object > deserializeCollection(SequenceNode node, java.lang.reflect.Type genericType) {
+    private Collection < Object > deserializeCollection(SequenceNode node, Type genericType) {
         Class < ? > elementClass = Object.class;
-        java.lang.reflect.Type elementGenType = null;
+        Type elementGenType = null;
 
         if (genericType instanceof ParameterizedType pt) {
-            java.lang.reflect.Type argType = pt.getActualTypeArguments()[0];
+            Type argType = pt.getActualTypeArguments()[0];
             elementGenType = argType;
             if (argType instanceof Class) {
                 elementClass = (Class < ? > ) argType;
@@ -392,7 +407,7 @@ public class ConfigHandleImpl implements ConfigHandle {
         collection = new ArrayList < > ();
 
         for (Node itemNode: node.getValue()) {
-            Object item = deserializeFieldByType(elementClass, elementGenType, itemNode, "item");
+            Object item = deserializeValue(elementClass, elementGenType, itemNode, "item");
             collection.add(item);
         }
         return collection;
@@ -455,7 +470,7 @@ public class ConfigHandleImpl implements ConfigHandle {
             case BLOCK -> CommentType.BLOCK;
             case IN_LINE ->  CommentType.IN_LINE;
             case BLANK_LINE ->   CommentType.BLANK_LINE;
-            case null ->  null;
+            case null ->  CommentType.BLANK_LINE;
         };
     }
 
@@ -463,7 +478,6 @@ public class ConfigHandleImpl implements ConfigHandle {
     public void saveConfig(UnsafeConfig config) {
         File configFile = config.getFile();
         boolean readOnly = config.isReadOnly();
-        InputStream stream = config.getStream();
 
         if (readOnly) {
             LoggingManager.warn("Configuration file " + configFile.getName() + " tried to save, but it's read-only.");
@@ -565,4 +579,21 @@ public class ConfigHandleImpl implements ConfigHandle {
             }
         }
     }
+
+    @Override
+    public <T> void registerCodec(Codec<T> codec) {
+        registry.register(codec);
+    }
+
+    private Class<?> rawClassOf(Type t) {
+        if (t instanceof Class<?> c) {
+            return c;
+        }
+        if (t instanceof ParameterizedType pt && pt.getRawType() instanceof Class<?> c) {
+            return c;
+        }
+        return Object.class;
+    }
+
+
 }

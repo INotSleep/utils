@@ -1,16 +1,19 @@
 package com.inotsleep.insutils.api.config;
 
 import com.inotsleep.insutils.spi.config.UnsafeConfig;
-import com.inotsleep.insutils.spi.config.UnsafeSerializableObject;
 
-import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
 
 public interface ConfigHandle {
     AtomicReference<ConfigHandle> instance = new AtomicReference<>();
 
     static void setInstance(ConfigHandle instance) {
-        ConfigHandle.instance.set(instance);
+        if (instance == null) {
+            throw new NullPointerException("instance");
+        }
+        if (!ConfigHandle.instance.compareAndSet(null, instance)) {
+            throw new IllegalStateException("ConfigHandle instance already set");
+        }
     }
 
     static ConfigHandle getInstance() {
@@ -19,4 +22,6 @@ public interface ConfigHandle {
 
     void saveConfig(UnsafeConfig config);
     void reloadConfig(UnsafeConfig config);
+
+    <T> void registerCodec(Codec<T> codec);
 }

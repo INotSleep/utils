@@ -15,7 +15,12 @@ public interface INSUtils {
     }
 
     static void setInstance(INSUtils instance) {
-        INSUtils.instance.set(instance);
+        if (instance == null) {
+            throw new NullPointerException("instance");
+        }
+        if (!INSUtils.instance.compareAndSet(null, instance)) {
+            throw new IllegalStateException("INSUtils instance already set");
+        }
     }
 
     void register(INSBukkitPlugin plugin);
