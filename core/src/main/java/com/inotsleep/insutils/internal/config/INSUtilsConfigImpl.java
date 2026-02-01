@@ -52,6 +52,6 @@ public class INSUtilsConfigImpl extends Config implements INSUtilsConfig {
                     MiniMessage.miniMessage().deserialize("<#dcdcdc>World</#dcdcdc>")
             ));
         });
-        stack = null;
+        //stack = null;
     }
 }
