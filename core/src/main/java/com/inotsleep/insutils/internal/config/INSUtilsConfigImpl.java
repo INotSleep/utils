@@ -18,9 +18,6 @@ public class INSUtilsConfigImpl extends Config implements INSUtilsConfig {
     @Path("configuration")
     private Configuration configuration = new Configuration();
 
-    @Path("item")
-    public ItemStack stack = ItemStack.of(Material.DIAMOND);
-
     @Override
     public INSUtilsConfig.Configuration getConfiguration() {
         return configuration;
@@ -39,19 +36,5 @@ public class INSUtilsConfigImpl extends Config implements INSUtilsConfig {
 
     public INSUtilsConfigImpl() {
         super(INSUtils.getInstance().getDataFolder(), "config.yml");
-        stack.editMeta(meta -> {
-            meta.addEnchant(Enchantment.AQUA_AFFINITY, 1, true);
-            meta.addEnchant(Enchantment.BREACH, 2, true);
-            meta.addEnchant(Enchantment.CHANNELING, 2, true);
-            meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-
-            meta.itemName(MiniMessage.miniMessage().deserialize("<green>Hello</green> <red>Hi</red> <#dcdcdc>Hello</#dcdcdc>"));
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<red>Hi</red> <green>Hello</green>"),
-                    MiniMessage.miniMessage().deserialize("<#dcdcdc>World</#dcdcdc>")
-            ));
-        });
-        //stack = null;
     }
 }
