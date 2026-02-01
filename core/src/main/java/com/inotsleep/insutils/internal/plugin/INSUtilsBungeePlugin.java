@@ -1,6 +1,8 @@
 package com.inotsleep.insutils.internal.plugin;
 
+import com.inotsleep.insutils.api.config.INSUtilsConfig;
 import com.inotsleep.insutils.internal.HandlerManager;
+import com.inotsleep.insutils.internal.config.INSUtilsConfigImpl;
 import com.inotsleep.insutils.spi.plugin.BungeePlugin;
 import com.inotsleep.insutils.api.plugin.INSBukkitPlugin;
 import com.inotsleep.insutils.api.plugin.INSBungeePlugin;
@@ -19,12 +21,14 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class INSUtilsBungeePlugin extends BungeePlugin implements INSUtils {
-    List<INSBungeePlugin> bungeePlugins;
+    private List<INSBungeePlugin> bungeePlugins;
+    private INSUtilsConfigImpl insUtilsConfig;
 
     private static INSUtilsBungeePlugin instance;
     public static INSUtilsBungeePlugin getInstance() {
         return instance;
     }
+
 
     private final Executor executor = new ThreadPerTaskExecutor(
             new ThreadFactory() {
@@ -46,6 +50,10 @@ public class INSUtilsBungeePlugin extends BungeePlugin implements INSUtils {
     public void doLoad() {
         instance = this;
         INSUtils.setInstance(this);
+
+        insUtilsConfig = new INSUtilsConfigImpl();
+        insUtilsConfig.reload();
+
         bungeePlugins = new ArrayList<>();
 
         I18nImpl.init(getInstance());
@@ -91,6 +99,11 @@ public class INSUtilsBungeePlugin extends BungeePlugin implements INSUtils {
     @Override
     public Executor getExecutor() {
         return executor;
+    }
+
+    @Override
+    public INSUtilsConfig getINSUtilsConfig() {
+        return insUtilsConfig;
     }
 
     static {

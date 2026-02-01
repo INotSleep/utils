@@ -1,6 +1,8 @@
 package com.inotsleep.insutils.internal.plugin;
 
+import com.inotsleep.insutils.api.config.INSUtilsConfig;
 import com.inotsleep.insutils.internal.HandlerManager;
+import com.inotsleep.insutils.internal.config.INSUtilsConfigImpl;
 import com.inotsleep.insutils.spi.plugin.BukkitPlugin;
 import com.inotsleep.insutils.api.plugin.INSBukkitPlugin;
 import com.inotsleep.insutils.api.plugin.INSBungeePlugin;
@@ -10,7 +12,6 @@ import com.inotsleep.insutils.api.i18n.I18n;
 import com.inotsleep.insutils.internal.i18n.I18nImpl;
 import com.inotsleep.insutils.internal.listeners.EventListener;
 import com.inotsleep.insutils.api.logging.LoggingManager;
-import com.inotsleep.insutils.internal.logging.LoggingManagerImpl;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class INSUtilsBukkitPlugin extends BukkitPlugin implements INSUtils {
     private List<INSBukkitPlugin> bukkitPlugins;
+    private INSUtilsConfigImpl insUtilsConfig;
 
     private static INSUtilsBukkitPlugin instance;
     public static INSUtilsBukkitPlugin getInstance() {
@@ -48,9 +50,13 @@ public class INSUtilsBukkitPlugin extends BukkitPlugin implements INSUtils {
     @Override
     public void doLoad() {
         instance = this;
+        INSUtils.setInstance(this);
         Initializer.tryToInitialize();
 
-        INSUtils.setInstance(this);
+        insUtilsConfig = new INSUtilsConfigImpl();
+        insUtilsConfig.reload();
+        System.out.println(insUtilsConfig.stack);
+
         bukkitPlugins = new ArrayList<>();
         I18nImpl.init(getInstance());
         I18n.getInstance().registerConsumer(getInstance());
@@ -96,6 +102,11 @@ public class INSUtilsBukkitPlugin extends BukkitPlugin implements INSUtils {
     @Override
     public Executor getExecutor() {
         return executor;
+    }
+
+    @Override
+    public INSUtilsConfig getINSUtilsConfig() {
+        return insUtilsConfig;
     }
 
     static {

@@ -18,10 +18,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
@@ -246,7 +243,7 @@ public class ConfigHandleImpl implements ConfigHandle {
         return new SequenceNode(Tag.SEQ, nodes, FlowStyle.AUTO);
     }
 
-    private ScalarNode serializePrimitive(Object value, boolean quoteStrings) {
+    public ScalarNode serializePrimitive(Object value, boolean quoteStrings) {
         Tag tag;
         ScalarStyle style;
 
@@ -255,7 +252,7 @@ public class ConfigHandleImpl implements ConfigHandle {
         }
 
         if (value instanceof Enum<?> e) {
-            return new ScalarNode(Tag.STR, e.name(), ScalarStyle.PLAIN);
+            return new ScalarNode(Tag.STR, e.name(), ScalarStyle.DOUBLE_QUOTED);
         }
 
         if (value instanceof String || value instanceof Character) {
@@ -288,61 +285,63 @@ public class ConfigHandleImpl implements ConfigHandle {
     }
 
     private Object deserializeField(Field field, Node node, String key) {
-        return deserializeValue(field.getType(), field.getGenericType(), node, key);
+        return deserializeValue(field.getGenericType(), node, key);
     }
 
-    private Object deserializeValue(Class < ? > type, Type genericType, Node node, String key) {
-        if (UnsafeSerializableObject.class.isAssignableFrom(type)) {
+    private Object deserializeValue(Type type, Node node, String key) {
+        Class<?> clazz = TypeKey.rawClassOf(type);
+
+        if (UnsafeSerializableObject.class.isAssignableFrom(clazz)) {
             if (!(node instanceof MappingNode)) {
                 LoggingManager.warn("Expected MappingNode for object '" + key + "' but found " + node.getNodeType());
                 return null;
             }
-            return deserializeObject((MappingNode) node, type, key);
+            return deserializeObject((MappingNode) node, clazz, key);
         }
 
-        if (Map.class.isAssignableFrom(type)) {
+        if (Map.class.isAssignableFrom(clazz)) {
             if (!(node instanceof MappingNode)) {
                 LoggingManager.warn("Expected MappingNode for map '" + key + "' but found " + node.getNodeType());
                 return null;
             }
-            return deserializeMap((MappingNode) node, genericType);
+            return deserializeMap((MappingNode) node, type);
         }
 
-        if (Collection.class.isAssignableFrom(type)) {
+        if (Collection.class.isAssignableFrom(clazz)) {
             if (!(node instanceof SequenceNode)) {
                 LoggingManager.warn("Expected SequenceNode for collection '" + key + "' but found " + node.getNodeType());
                 return null;
             }
-            return deserializeCollection((SequenceNode) node, genericType);
+            return deserializeCollection((SequenceNode) node, type);
         }
 
-        if (type.isEnum()) {
+        if (clazz.isEnum()) {
             if (!(node instanceof ScalarNode)) {
                 LoggingManager.warn("Expected ScalarNode for enum '" + key + "' but found " + node.getNodeType());
                 return null;
             }
-            return deserializeEnum(type, (ScalarNode) node);
+            return deserializeEnum(clazz, (ScalarNode) node);
         }
 
-        if (type.isPrimitive() ||
-                Number.class.isAssignableFrom(type) ||
-                String.class.isAssignableFrom(type) ||
-                Character.class.isAssignableFrom(type) ||
-                Boolean.class.isAssignableFrom(type)
+        if (clazz.isPrimitive() ||
+                Number.class.isAssignableFrom(clazz) ||
+                String.class.isAssignableFrom(clazz) ||
+                Character.class.isAssignableFrom(clazz) ||
+                Boolean.class.isAssignableFrom(clazz)
         ) {
             if (!(node instanceof ScalarNode)) {
                 LoggingManager.warn("Expected ScalarNode for primitive '" + key + "' but found " + node.getNodeType());
                 return null;
             }
-            return deserializePrimitive(type, (ScalarNode) node);
+            return deserializePrimitive(clazz, (ScalarNode) node);
         }
 
-        Optional<Codec<?>> optionalCodec = registry.find(genericType);
+        Optional<Codec<?>> optionalCodec = registry.find(type);
         if (optionalCodec.isPresent()) {
             return optionalCodec.get().deserializeAny(node);
         }
 
-        LoggingManager.warn("Unsupported field type: " + type.getName() + " (" + key + "). Will treat as string.");
+        LoggingManager.warn("Unsupported field type: " + clazz.getName() + " (" + key + "). Will treat as string.");
         if (node instanceof ScalarNode) {
             return ((ScalarNode) node).getValue();
         }
@@ -361,21 +360,15 @@ public class ConfigHandleImpl implements ConfigHandle {
     }
 
     private Map<Object, Object> deserializeMap(MappingNode node, Type genericType) {
-        Class<?> keyClass = Object.class;
-        Class<?> valClass = Object.class;
-
-        Type keyGenType = null;
-        Type valGenType = null;
+        Type keyType = null;
+        Type valType = null;
 
         if (genericType instanceof ParameterizedType pt) {
             Type kType = pt.getActualTypeArguments()[0];
             Type vType = pt.getActualTypeArguments()[1];
 
-            keyGenType = kType;
-            valGenType = vType;
-
-            keyClass = rawClassOf(kType);
-            valClass = rawClassOf(vType);
+            keyType = kType;
+            valType = vType;
         }
 
         Map<Object, Object> map = new LinkedHashMap<>();
@@ -383,8 +376,8 @@ public class ConfigHandleImpl implements ConfigHandle {
             Node kNode = tuple.getKeyNode();
             Node vNode = tuple.getValueNode();
 
-            Object mapKey = deserializeValue(keyClass, keyGenType, kNode, "map-key");
-            Object mapValue = deserializeValue(valClass, valGenType, vNode, "map-value");
+            Object mapKey = deserializeValue(keyType, kNode, "map-key");
+            Object mapValue = deserializeValue(valType, vNode, "map-value");
             map.put(mapKey, mapValue);
         }
 
@@ -392,22 +385,17 @@ public class ConfigHandleImpl implements ConfigHandle {
     }
 
     private Collection < Object > deserializeCollection(SequenceNode node, Type genericType) {
-        Class < ? > elementClass = Object.class;
         Type elementGenType = null;
 
         if (genericType instanceof ParameterizedType pt) {
-            Type argType = pt.getActualTypeArguments()[0];
-            elementGenType = argType;
-            if (argType instanceof Class) {
-                elementClass = (Class < ? > ) argType;
-            }
+            elementGenType = pt.getActualTypeArguments()[0];
         }
 
         Collection < Object > collection;
         collection = new ArrayList < > ();
 
         for (Node itemNode: node.getValue()) {
-            Object item = deserializeValue(elementClass, elementGenType, itemNode, "item");
+            Object item = deserializeValue(elementGenType, itemNode, "item");
             collection.add(item);
         }
         return collection;
@@ -584,16 +572,4 @@ public class ConfigHandleImpl implements ConfigHandle {
     public <T> void registerCodec(Codec<T> codec) {
         registry.register(codec);
     }
-
-    private Class<?> rawClassOf(Type t) {
-        if (t instanceof Class<?> c) {
-            return c;
-        }
-        if (t instanceof ParameterizedType pt && pt.getRawType() instanceof Class<?> c) {
-            return c;
-        }
-        return Object.class;
-    }
-
-
 }

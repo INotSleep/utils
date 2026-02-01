@@ -1,5 +1,6 @@
 package com.inotsleep.insutils.api.config;
 
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Objects;
@@ -66,17 +67,25 @@ public abstract class TypeKey<T> {
         return pt.getActualTypeArguments()[0];
     }
 
-    private static Class<?> rawClassOf(Type type) {
-        if (type instanceof Class<?> c) {
+    public static Class<?> rawClassOf(Type t) {
+        if (t instanceof Class<?> c) {
             return c;
         }
-        if (type instanceof ParameterizedType pt) {
-            Type rt = pt.getRawType();
+        if (t instanceof ParameterizedType p) {
+            Type rt = p.getRawType();
             if (rt instanceof Class<?> c) {
                 return c;
             }
         }
-        throw new IllegalArgumentException("Unsupported Type: " + type);
+        if (t instanceof GenericArrayType ga) {
+            Class<?> comp = rawClassOf(ga.getGenericComponentType());
+            if (comp != null) {
+                // делаем Class для массива компонента: comp[].
+                return java.lang.reflect.Array.newInstance(comp, 0).getClass();
+            }
+        }
+
+        return Object.class;
     }
 
     private static Type normalizeType(Type type) {

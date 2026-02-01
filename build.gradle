@@ -6,8 +6,8 @@ plugins {
 
 apply plugin: 'java'
 
-group = 'com.inotsleep'
-version = '2.1.0'
+group = property("group")
+version = property("version")
 
 repositories {
     mavenCentral()

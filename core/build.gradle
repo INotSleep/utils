@@ -40,6 +40,7 @@ dependencies {
     shadow "org.bstats:bstats-bungeecord:3.1.0"
     shadow "org.snakeyaml:snakeyaml-engine:2.9"
     shadow "com.google.code.gson:gson:2.13.2"
+    shadow "com.github.Querz:NBT:6.1"
 
     compileOnly "org.xerial:sqlite-jdbc:3.43.2.1"
     compileOnly "com.google.guava:guava:12+"
@@ -60,6 +61,7 @@ shadowJar {
     relocate("org.snakeyaml", "com.inotsleep.insutils.internal.relocated.org.snakeyaml")
     relocate("com.google.gson", "com.inotsleep.insutils.internal.relocated.com.google.gson")
     relocate("com.google.errorprone", "com.inotsleep.insutils.internal.relocated.com.google.errorprone")
+    relocate("net.querz", "com.inotsleep.insutils.internal.relocated.net.querz")
 }
 
 tasks.named("build") {

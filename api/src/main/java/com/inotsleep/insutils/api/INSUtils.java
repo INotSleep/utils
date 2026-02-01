@@ -1,5 +1,6 @@
 package com.inotsleep.insutils.api;
 
+import com.inotsleep.insutils.api.config.INSUtilsConfig;
 import com.inotsleep.insutils.api.plugin.INSBukkitPlugin;
 import com.inotsleep.insutils.api.plugin.INSBungeePlugin;
 
@@ -31,4 +32,6 @@ public interface INSUtils {
 
     File getDataFolder();
     Executor getExecutor();
+
+    INSUtilsConfig getINSUtilsConfig();
 }
