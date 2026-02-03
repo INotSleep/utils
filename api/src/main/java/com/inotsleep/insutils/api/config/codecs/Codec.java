@@ -1,5 +1,6 @@
-package com.inotsleep.insutils.api.config;
+package com.inotsleep.insutils.api.config.codecs;
 
+import com.inotsleep.insutils.api.config.TypeKey;
 import org.snakeyaml.engine.v2.nodes.Node;
 
 public interface Codec<T> {

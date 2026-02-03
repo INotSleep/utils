@@ -55,7 +55,6 @@ public class INSUtilsBukkitPlugin extends BukkitPlugin implements INSUtils {
 
         insUtilsConfig = new INSUtilsConfigImpl();
         insUtilsConfig.reload();
-        System.out.println(insUtilsConfig.stack);
 
         bukkitPlugins = new ArrayList<>();
         I18nImpl.init(getInstance());

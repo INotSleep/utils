@@ -1,4 +1,4 @@
-package com.inotsleep.insutils.api.objects;
+package com.inotsleep.insutils.spi.gui;
 
 import com.inotsleep.insutils.api.logging.LoggingManager;
 import com.inotsleep.insutils.spi.plugin.BukkitPlugin;

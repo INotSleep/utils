@@ -1,6 +1,6 @@
 package com.inotsleep.insutils.internal.config;
 
-import com.inotsleep.insutils.api.config.Codec;
+import com.inotsleep.insutils.api.config.codecs.Codec;
 import com.inotsleep.insutils.api.config.TypeKey;
 
 import java.lang.reflect.ParameterizedType;

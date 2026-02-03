@@ -1,4 +1,4 @@
-package com.inotsleep.insutils.api.objects;
+package com.inotsleep.insutils.api.common;
 
 public class Pair<K, V> {
     private K k;

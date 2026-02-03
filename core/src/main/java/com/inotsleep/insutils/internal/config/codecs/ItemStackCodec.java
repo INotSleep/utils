@@ -1,7 +1,7 @@
 package com.inotsleep.insutils.internal.config.codecs;
 
 import com.google.gson.*;
-import com.inotsleep.insutils.api.config.Codec;
+import com.inotsleep.insutils.api.config.codecs.Codec;
 import com.inotsleep.insutils.api.config.TypeKey;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -44,7 +44,7 @@ public class ItemStackCodec implements Codec<ItemStack> {
                 JsonArray array = new JsonArray();
 
                 for (JsonElement element : lore) {
-                    Component component = JSONComponentSerializer.json().deserialize(gson.toJson(itemNameElement));
+                    Component component = JSONComponentSerializer.json().deserialize(gson.toJson(element));
                     array.add(new JsonPrimitive(MiniMessage.miniMessage().serialize(component)));
                 }
 

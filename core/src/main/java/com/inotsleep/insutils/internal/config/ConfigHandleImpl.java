@@ -1,6 +1,7 @@
 package com.inotsleep.insutils.internal.config;
 
 import com.inotsleep.insutils.api.config.*;
+import com.inotsleep.insutils.api.config.codecs.Codec;
 import com.inotsleep.insutils.spi.config.UnsafeConfig;
 import com.inotsleep.insutils.spi.config.UnsafeSerializableObject;
 import com.inotsleep.insutils.api.logging.LoggingManager;
@@ -213,7 +214,7 @@ public class ConfigHandleImpl implements ConfigHandle {
                 return serializeCollection(type, collection);
             }
             case null, default -> {
-                Optional<Codec<?>> optionalCodec = registry.find(type);
+                Optional<com.inotsleep.insutils.api.config.codecs.Codec<?>> optionalCodec = registry.find(type);
                 if (optionalCodec.isPresent()) {
                     return optionalCodec.get().serializeAny(value);
                 }
@@ -336,7 +337,7 @@ public class ConfigHandleImpl implements ConfigHandle {
             return deserializePrimitive(clazz, (ScalarNode) node);
         }
 
-        Optional<Codec<?>> optionalCodec = registry.find(type);
+        Optional<com.inotsleep.insutils.api.config.codecs.Codec<?>> optionalCodec = registry.find(type);
         if (optionalCodec.isPresent()) {
             return optionalCodec.get().deserializeAny(node);
         }

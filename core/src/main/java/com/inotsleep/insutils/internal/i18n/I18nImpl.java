@@ -9,8 +9,7 @@ import com.inotsleep.insutils.internal.i18n.config.I18nConfig;
 import com.inotsleep.insutils.internal.i18n.config.LangFile;
 import com.inotsleep.insutils.api.logging.LoggingManager;
 import com.inotsleep.insutils.api.INSUtils;
-import com.inotsleep.insutils.api.objects.Pair;
-import org.bukkit.entity.Player;
+import com.inotsleep.insutils.api.common.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
@@ -32,7 +31,6 @@ import java.util.stream.Collectors;
 
 public class I18nImpl implements I18n {
     private static final String API_ENDPOINT_HOST = "https://inotsleep.com/";
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(I18nImpl.class);
     private static I18nImpl instance;
 
     private final INSUtils plugin;
@@ -51,8 +49,6 @@ public class I18nImpl implements I18n {
     private final Set<String> fetched = ConcurrentHashMap.newKeySet();
 
     private volatile boolean projectsReady = false;
-
-    private final List<I18nConsumer> unFetchedConsumers = new ArrayList<>();
 
     AtomicBoolean reloadBlocked = new AtomicBoolean(false);
 

@@ -1,5 +1,6 @@
 package com.inotsleep.insutils.api.config;
 
+import com.inotsleep.insutils.api.config.codecs.Codec;
 import com.inotsleep.insutils.spi.config.UnsafeConfig;
 
 import java.util.concurrent.atomic.AtomicReference;

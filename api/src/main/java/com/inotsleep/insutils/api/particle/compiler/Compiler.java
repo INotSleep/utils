@@ -1,6 +1,6 @@
 package com.inotsleep.insutils.api.particle.compiler;
 
-import com.inotsleep.insutils.api.objects.Pair;
+import com.inotsleep.insutils.api.common.Pair;
 import com.inotsleep.insutils.api.particle.Animation;
 import com.inotsleep.insutils.api.particle.Parameter;
 import com.inotsleep.insutils.api.particle.compiled.CompiledAnimation;
