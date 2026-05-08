@@ -81,23 +81,36 @@ public final class YamlNodeConverter {
     }
 
     private static ScalarNode toSnakeScalarNode(YamlScalarNode node) {
-        return new ScalarNode(Tag.STR, node.getValue(), toSnakeScalarStyle(node.getScalarType()));
+        String value = node.getValue() == null ? "" : node.getValue();
+        return new ScalarNode(Tag.STR, value, toSnakeScalarStyle(node.getScalarType()));
     }
 
     private static SequenceNode toSnakeSequenceNode(YamlSequenceNode node) {
         List<Node> snakeNodes = new ArrayList<>();
-        for (YamlNode child : node.getNodes()) {
-            snakeNodes.add(toSnakeNode(child));
+        List<YamlNode> children = node.getNodes();
+        if (children != null) {
+            for (YamlNode child : children) {
+                if (child != null) {
+                    snakeNodes.add(toSnakeNode(child));
+                }
+            }
         }
         return new SequenceNode(Tag.SEQ, snakeNodes, FlowStyle.AUTO);
     }
 
     private static MappingNode toSnakeMappingNodeInternal(YamlMappingNode node) {
         List<NodeTuple> tuples = new ArrayList<>();
-        for (YamlNodeTyple tuple : node.getNodes()) {
-            ScalarNode keyNode = toSnakeScalarNode(tuple.getKey());
-            Node valueNode = toSnakeNode(tuple.getValue());
-            tuples.add(new NodeTuple(keyNode, valueNode));
+        List<YamlNodeTyple> sourceTuples = node.getNodes();
+        if (sourceTuples != null) {
+            for (YamlNodeTyple tuple : sourceTuples) {
+                if (tuple == null || tuple.getKey() == null || tuple.getValue() == null) {
+                    continue;
+                }
+
+                ScalarNode keyNode = toSnakeScalarNode(tuple.getKey());
+                Node valueNode = toSnakeNode(tuple.getValue());
+                tuples.add(new NodeTuple(keyNode, valueNode));
+            }
         }
         return new MappingNode(Tag.MAP, tuples, FlowStyle.AUTO);
     }

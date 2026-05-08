@@ -168,10 +168,14 @@ public class ConfigHandleImpl implements ConfigHandle {
 
     private void applyYamlMappingChanges(MappingNode target, YamlMappingNode source) {
         MappingNode converted = YamlNodeConverter.toSnakeMappingNode(source);
-        target.setValue(new ArrayList<>(converted.getValue()));
-        target.setBlockComments(new ArrayList<>(converted.getBlockComments()));
-        target.setEndComments(new ArrayList<>(converted.getEndComments()));
-        target.setInLineComments(new ArrayList<>(converted.getInLineComments()));
+        target.setValue(copyOrEmpty(converted.getValue()));
+        target.setBlockComments(copyOrEmpty(converted.getBlockComments()));
+        target.setEndComments(copyOrEmpty(converted.getEndComments()));
+        target.setInLineComments(copyOrEmpty(converted.getInLineComments()));
+    }
+
+    private static <T> ArrayList<T> copyOrEmpty(List<T> source) {
+        return source == null ? new ArrayList<>() : new ArrayList<>(source);
     }
 
     private void processFieldComments(Field field, Node keyNode, Node valueNode) {
