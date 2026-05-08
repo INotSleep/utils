@@ -13,7 +13,6 @@ public class HologramAPIHolderImpl implements HologramAPIHolder {
     public static AtomicReference<HologramAPI> instance = new AtomicReference<>(null);
 
     public static void init(BukkitPlugin plugin) {
-        HologramAPIHolder.setInstance(new  HologramAPIHolderImpl());
         LoggingManager.info("Initializing HologramAPI");
 
         if (Bukkit.getPluginManager().isPluginEnabled("HolographicDisplays")) instance.set(new HolographicDisplaysHologramAPI(plugin));

@@ -2,9 +2,11 @@ package com.inotsleep.insutils.internal.config;
 
 import com.inotsleep.insutils.api.config.*;
 import com.inotsleep.insutils.api.config.codecs.Codec;
+import com.inotsleep.insutils.api.yaml.YamlMappingNode;
 import com.inotsleep.insutils.spi.config.UnsafeConfig;
 import com.inotsleep.insutils.spi.config.UnsafeSerializableObject;
 import com.inotsleep.insutils.api.logging.LoggingManager;
+import com.inotsleep.insutils.internal.yaml.YamlNodeConverter;
 import org.snakeyaml.engine.v2.api.*;
 import org.snakeyaml.engine.v2.comments.CommentLine;
 import org.snakeyaml.engine.v2.comments.CommentType;
@@ -33,7 +35,9 @@ public class ConfigHandleImpl implements ConfigHandle {
     }
 
     private void serialize(UnsafeSerializableObject target, MappingNode node) {
-        target.beforeSerialization(node);
+        YamlMappingNode beforeNode = YamlNodeConverter.toApiMappingNode(node);
+        target.beforeSerialization(beforeNode);
+        applyYamlMappingChanges(node, beforeNode);
 
         List<Field> allFields = new ArrayList<>();
         Class<?> cls = target.getClass();
@@ -99,11 +103,15 @@ public class ConfigHandleImpl implements ConfigHandle {
                         .collect(Collectors.toList())
         );
 
-        target.afterSerialization(node);
+        YamlMappingNode afterNode = YamlNodeConverter.toApiMappingNode(node);
+        target.afterSerialization(afterNode);
+        applyYamlMappingChanges(node, afterNode);
     }
 
     private void deserialize(UnsafeSerializableObject target, MappingNode node) {
-        target.beforeDeserialization(node);
+        YamlMappingNode beforeNode = YamlNodeConverter.toApiMappingNode(node);
+        target.beforeDeserialization(beforeNode);
+        applyYamlMappingChanges(node, beforeNode);
 
         Map< String, Node > nodeMap = new HashMap < > ();
         for (NodeTuple tuple: node.getValue()) {
@@ -146,7 +154,9 @@ public class ConfigHandleImpl implements ConfigHandle {
             }
         }
 
-        target.afterDeserialization(node);
+        YamlMappingNode afterNode = YamlNodeConverter.toApiMappingNode(node);
+        target.afterDeserialization(afterNode);
+        applyYamlMappingChanges(node, afterNode);
     }
 
     private String[] parseHeader(UnsafeSerializableObject target) {
@@ -154,6 +164,14 @@ public class ConfigHandleImpl implements ConfigHandle {
         if (header == null) return null;
 
         return header.value();
+    }
+
+    private void applyYamlMappingChanges(MappingNode target, YamlMappingNode source) {
+        MappingNode converted = YamlNodeConverter.toSnakeMappingNode(source);
+        target.setValue(new ArrayList<>(converted.getValue()));
+        target.setBlockComments(new ArrayList<>(converted.getBlockComments()));
+        target.setEndComments(new ArrayList<>(converted.getEndComments()));
+        target.setInLineComments(new ArrayList<>(converted.getInLineComments()));
     }
 
     private void processFieldComments(Field field, Node keyNode, Node valueNode) {
@@ -214,9 +232,9 @@ public class ConfigHandleImpl implements ConfigHandle {
                 return serializeCollection(type, collection);
             }
             case null, default -> {
-                Optional<com.inotsleep.insutils.api.config.codecs.Codec<?>> optionalCodec = registry.find(type);
+                Optional<Codec<?>> optionalCodec = registry.find(type);
                 if (optionalCodec.isPresent()) {
-                    return optionalCodec.get().serializeAny(value);
+                    return YamlNodeConverter.toSnakeNode(optionalCodec.get().serializeAny(value));
                 }
                 return serializePrimitive(value, true);
             }
@@ -339,7 +357,7 @@ public class ConfigHandleImpl implements ConfigHandle {
 
         Optional<com.inotsleep.insutils.api.config.codecs.Codec<?>> optionalCodec = registry.find(type);
         if (optionalCodec.isPresent()) {
-            return optionalCodec.get().deserializeAny(node);
+            return optionalCodec.get().deserializeAny(YamlNodeConverter.toApiNode(node));
         }
 
         LoggingManager.warn("Unsupported field type: " + clazz.getName() + " (" + key + "). Will treat as string.");

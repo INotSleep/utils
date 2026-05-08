@@ -1,25 +1,25 @@
 package com.inotsleep.insutils.spi.config;
 
-import org.snakeyaml.engine.v2.nodes.MappingNode;
+import com.inotsleep.insutils.api.yaml.YamlMappingNode;
 
 public class SerializableObject extends UnsafeSerializableObject {
     @Override
-    public void beforeDeserialization(MappingNode node) {
+    public void beforeDeserialization(YamlMappingNode node) {
         beforeDeserialization();
     }
 
     @Override
-    public void afterDeserialization(MappingNode node) {
+    public void afterDeserialization(YamlMappingNode node) {
         afterDeserialization();
     }
 
     @Override
-    public void beforeSerialization(MappingNode node) {
+    public void beforeSerialization(YamlMappingNode node) {
         beforeSerialization();
     }
 
     @Override
-    public void afterSerialization(MappingNode node) {
+    public void afterSerialization(YamlMappingNode node) {
         afterSerialization();
     }
 

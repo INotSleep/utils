@@ -1,19 +1,19 @@
 package com.inotsleep.insutils.api.config.codecs;
 
 import com.inotsleep.insutils.api.config.TypeKey;
-import org.snakeyaml.engine.v2.nodes.Node;
+import com.inotsleep.insutils.api.yaml.YamlNode;
 
 public interface Codec<T> {
-    Node serialize(T value);
-    T deserialize(Node node);
+    YamlNode serialize(T value);
+    T deserialize(YamlNode node);
     TypeKey<T> key();
 
     @SuppressWarnings("unchecked")
-    default Node serializeAny(Object value) {
+    default YamlNode serializeAny(Object value) {
         return serialize((T) value);
     }
 
-    default Object deserializeAny(Node node) {
+    default Object deserializeAny(YamlNode node) {
         return deserialize(node);
     }
 }

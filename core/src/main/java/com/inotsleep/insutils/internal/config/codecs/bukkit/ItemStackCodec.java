@@ -1,28 +1,30 @@
 package com.inotsleep.insutils.internal.config.codecs.bukkit;
 
 import com.google.gson.*;
-import com.inotsleep.insutils.api.config.codecs.Codec;
+import com.inotsleep.insutils.api.config.CommentType;
 import com.inotsleep.insutils.api.config.TypeKey;
+import com.inotsleep.insutils.api.config.codecs.Codec;
+import com.inotsleep.insutils.api.yaml.YamlCommentLine;
+import com.inotsleep.insutils.api.yaml.YamlNode;
+import com.inotsleep.insutils.api.yaml.YamlNodes;
+import com.inotsleep.insutils.api.yaml.YamlScalarNode;
+import com.inotsleep.insutils.api.yaml.YamlScalarType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.UnsafeValues;
 import org.bukkit.inventory.ItemStack;
-import org.snakeyaml.engine.v2.comments.CommentLine;
-import org.snakeyaml.engine.v2.comments.CommentType;
-import org.snakeyaml.engine.v2.common.ScalarStyle;
-import org.snakeyaml.engine.v2.nodes.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ItemStackCodec implements Codec<ItemStack> {
-    Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     @Override
-    public Node serialize(ItemStack value) {
+    public YamlNode serialize(ItemStack value) {
         UnsafeValues unsafe = Bukkit.getUnsafe();
-
         JsonObject object = unsafe.serializeItemAsJson(value);
 
         JsonElement componentsElement = object.get("components");
@@ -42,27 +44,29 @@ public class ItemStackCodec implements Codec<ItemStack> {
                 components.remove("minecraft:lore");
 
                 JsonArray array = new JsonArray();
-
                 for (JsonElement element : lore) {
                     Component component = JSONComponentSerializer.json().deserialize(gson.toJson(element));
                     array.add(new JsonPrimitive(MiniMessage.miniMessage().serialize(component)));
                 }
-
                 components.add("minecraft:lore", array);
             }
         }
 
-        return applyCautionComment(new ScalarNode(Tag.STR, gson.toJson(object), ScalarStyle.LITERAL));
+        YamlScalarNode node = YamlNodes.scalar(gson.toJson(object), YamlScalarType.LITERAL);
+        node.setInLineComments(List.of(new YamlCommentLine(
+                CommentType.IN_LINE,
+                " In case of server version change, items may break!"
+        )));
+        return node;
     }
 
     @Override
-    public ItemStack deserialize(Node node) {
+    public ItemStack deserialize(YamlNode node) {
         UnsafeValues unsafe = Bukkit.getUnsafe();
 
-        if (node instanceof ScalarNode scalarNode) {
+        if (node instanceof YamlScalarNode scalarNode) {
             Component name;
-            List<Component> lore =  new ArrayList<>();
-
+            List<Component> lore = new ArrayList<>();
             JsonObject object = JsonParser.parseString(scalarNode.getValue()).getAsJsonObject();
 
             JsonElement componentsElement = object.get("components");
@@ -87,30 +91,20 @@ public class ItemStackCodec implements Codec<ItemStack> {
             }
 
             ItemStack stack = unsafe.deserializeItemFromJson(object);
-
-            stack.editMeta((meta) -> {
-                if (name != null) meta.itemName(name);
+            stack.editMeta(meta -> {
+                if (name != null) {
+                    meta.itemName(name);
+                }
                 meta.lore(lore);
             });
-
             return stack;
         }
+
         throw new IllegalArgumentException("Unsupported node type " + node.getClass());
     }
 
     @Override
     public TypeKey<ItemStack> key() {
         return TypeKey.of(ItemStack.class);
-    }
-
-    private Node applyCautionComment(Node node) {
-        node.setInLineComments(List.of(new CommentLine(
-                Optional.empty(),
-                Optional.empty(),
-                " In case of server version change, items may break!",
-                CommentType.BLOCK
-        )));
-
-        return node;
     }
 }

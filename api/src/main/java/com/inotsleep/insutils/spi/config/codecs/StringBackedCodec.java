@@ -1,22 +1,22 @@
 package com.inotsleep.insutils.spi.config.codecs;
 
 import com.inotsleep.insutils.api.config.codecs.Codec;
-import org.snakeyaml.engine.v2.common.ScalarStyle;
-import org.snakeyaml.engine.v2.nodes.Node;
-import org.snakeyaml.engine.v2.nodes.ScalarNode;
-import org.snakeyaml.engine.v2.nodes.Tag;
+import com.inotsleep.insutils.api.yaml.YamlNode;
+import com.inotsleep.insutils.api.yaml.YamlNodes;
+import com.inotsleep.insutils.api.yaml.YamlScalarNode;
+import com.inotsleep.insutils.api.yaml.YamlScalarType;
 
 public abstract class StringBackedCodec<T> implements Codec<T> {
     @Override
-    public Node serialize(T value) {
+    public YamlNode serialize(T value) {
         String stringValue = serializeToString(value);
         boolean multiline = stringValue.contains("\n");
-        return new ScalarNode(Tag.STR, stringValue, multiline ? ScalarStyle.LITERAL : ScalarStyle.DOUBLE_QUOTED);
+        return YamlNodes.scalar(stringValue, multiline ? YamlScalarType.LITERAL : YamlScalarType.DOUBLE_QUOTED);
     }
 
     @Override
-    public T deserialize(Node node) {
-        if (node instanceof ScalarNode scalarNode) {
+    public T deserialize(YamlNode node) {
+        if (node instanceof YamlScalarNode scalarNode) {
             return deserializeFromString(scalarNode.getValue());
         }
         throw new IllegalArgumentException("Unsupported node type " + node.getClass());

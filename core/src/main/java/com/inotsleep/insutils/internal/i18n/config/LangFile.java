@@ -1,10 +1,8 @@
 package com.inotsleep.insutils.internal.i18n.config;
 
 import com.inotsleep.insutils.api.i18n.LangEntry;
+import com.inotsleep.insutils.api.yaml.*;
 import com.inotsleep.insutils.spi.config.UnsafeConfig;
-import org.snakeyaml.engine.v2.common.FlowStyle;
-import org.snakeyaml.engine.v2.common.ScalarStyle;
-import org.snakeyaml.engine.v2.nodes.*;
 
 import java.io.File;
 import java.io.InputStream;
@@ -20,53 +18,66 @@ public class LangFile extends UnsafeConfig {
         return translations.get(key);
     }
 
+    public void putAll(LangFile other) {
+        if (other == null) {
+            return;
+        }
+        translations.putAll(other.translations);
+    }
+
     public LangFile(File file, Map<String, LangEntry> defaults) {
         super(file);
         translations.putAll(defaults);
     }
 
     @Override
-    public void beforeDeserialization(MappingNode node) {
+    public void beforeDeserialization(YamlMappingNode node) {
         translations.clear();
         processMappingNode(node, "");
     }
 
     @Override
-    public void afterDeserialization(MappingNode node) {
-
+    public void afterDeserialization(YamlMappingNode node) {
     }
 
-    private void processMappingNode(MappingNode node, String prefix) {
-        for (NodeTuple tuple: node.getValue()) {
-            Node keyNode = tuple.getKeyNode();
-            if (keyNode instanceof ScalarNode) {
-                String key = ((ScalarNode) keyNode).getValue();
-                Node valueNode = tuple.getValueNode();
+    private void processMappingNode(YamlMappingNode node, String prefix) {
+        for (YamlNodeTyple tuple : node.getNodes()) {
+            YamlScalarNode keyNode = tuple.getKey();
+            if (keyNode == null) {
+                continue;
+            }
 
-                if (valueNode instanceof MappingNode mappingNode) {
+            String key = keyNode.getValue();
+            YamlNode valueNode = tuple.getValue();
+            switch (valueNode) {
+                case YamlMappingNode mappingNode -> {
                     processMappingNode(mappingNode, prefix + key + ".");
-                } else if (valueNode instanceof ScalarNode scalarNode) {
+                    continue;
+                }
+                case YamlScalarNode scalarNode -> {
                     translations.put(prefix + key, new LangEntry(scalarNode.getValue()));
-                } else if (valueNode instanceof SequenceNode sequenceNode) {
-                    translations.put(
-                            prefix + key,
-                            new LangEntry(
-                                    sequenceNode
-                                        .getValue()
-                                        .stream()
-                                        .filter(it -> it.getNodeType() == NodeType.SCALAR)
-                                        .map(it -> ((ScalarNode) it).getValue())
-                                        .toList()
-                        )
-                    );
+                    continue;
+                }
+                case YamlSequenceNode sequenceNode -> {
+                    List<String> values = sequenceNode
+                            .getNodes()
+                            .stream()
+                            .filter(it -> it instanceof YamlScalarNode)
+                            .map(it -> ((YamlScalarNode) it).getValue())
+                            .toList();
+
+                    translations.put(prefix + key, new LangEntry(values));
+                }
+                case null, default -> {
                 }
             }
+
         }
     }
 
     @Override
-    public void beforeSerialization(MappingNode root) {
-        root.setValue(new ArrayList<>());
+    public void beforeSerialization(YamlMappingNode root) {
+        root.setNodes(new ArrayList<>());
 
         for (Map.Entry<String, LangEntry> entry : translations.entrySet()) {
             String fullKey = entry.getKey();
@@ -78,56 +89,49 @@ public class LangFile extends UnsafeConfig {
     }
 
     @Override
-    public void afterSerialization(MappingNode node) {
-
+    public void afterSerialization(YamlMappingNode node) {
     }
 
-    private ScalarStyle getScalarStyle(String value) {
-        return value.contains("\n") || value.contains("\r") ? ScalarStyle.LITERAL : ScalarStyle.DOUBLE_QUOTED;
+    private YamlScalarType getScalarStyle(String value) {
+        return value.contains("\n") || value.contains("\r") ? YamlScalarType.LITERAL : YamlScalarType.DOUBLE_QUOTED;
     }
 
-    private void insertLangEntry(MappingNode current, String[] parts, int index, LangEntry entry) {
+    private void insertLangEntry(YamlMappingNode current, String[] parts, int index, LangEntry entry) {
         String keyPart = parts[index];
         if (index == parts.length - 1) {
-            ScalarNode keyNode = new ScalarNode(Tag.STR, keyPart, ScalarStyle.PLAIN);
-            Node valueNode = null;
+            YamlNode valueNode = null;
 
             if (entry.isList()) {
-                List<Node> items = new ArrayList<>();
+                List<YamlNode> items = new ArrayList<>();
                 for (String line : entry.getListValue()) {
-                    items.add(new ScalarNode(Tag.STR, line, getScalarStyle(line)));
+                    items.add(YamlNodes.scalar(line, getScalarStyle(line)));
                 }
-                valueNode = new SequenceNode(Tag.SEQ, items, FlowStyle.AUTO);
+                valueNode = YamlNodes.sequence(items);
             } else if (entry.isString()) {
-                valueNode = new ScalarNode(
-                        Tag.STR,
-                        entry.getValue(),
-                        getScalarStyle(entry.getValue())
-                );
+                valueNode = YamlNodes.scalar(entry.getValue(), getScalarStyle(entry.getValue()));
             }
 
-            if (valueNode != null) current.getValue().add(new NodeTuple(keyNode, valueNode));
+            if (valueNode != null) {
+                current.getNodes().add(YamlNodes.entry(keyPart, valueNode));
+            }
             return;
         }
 
-        MappingNode childMap = null;
+        YamlMappingNode childMap = null;
+        for (YamlNodeTyple tuple : current.getNodes()) {
+            if (tuple.getKey() == null || tuple.getValue() == null) {
+                continue;
+            }
 
-        for (NodeTuple tuple : current.getValue()) {
-            Node k = tuple.getKeyNode();
-            Node v = tuple.getValueNode();
-
-            if (k instanceof ScalarNode scalarKey
-                    && scalarKey.getValue().equals(keyPart)
-                    && v instanceof MappingNode mappingNode) {
+            if (keyPart.equals(tuple.getKey().getValue()) && tuple.getValue() instanceof YamlMappingNode mappingNode) {
                 childMap = mappingNode;
                 break;
             }
         }
 
         if (childMap == null) {
-            childMap = new MappingNode(Tag.MAP, new ArrayList<>(), FlowStyle.AUTO);
-            ScalarNode keyNode = new ScalarNode(Tag.STR, keyPart, ScalarStyle.PLAIN);
-            current.getValue().add(new NodeTuple(keyNode, childMap));
+            childMap = YamlNodes.mapping();
+            current.getNodes().add(YamlNodes.entry(keyPart, childMap));
         }
 
         insertLangEntry(childMap, parts, index + 1, entry);
@@ -145,14 +149,5 @@ public class LangFile extends UnsafeConfig {
 
     public LangFile copy(File configFile) {
         return new LangFile(configFile, translations);
-    }
-
-    public void putAll(Map<String, LangEntry> entries) {
-        translations.putAll(entries);
-    }
-
-    public void putAll(LangFile langFile) {
-        if (langFile == null) return;
-        translations.putAll(langFile.translations);
     }
 }

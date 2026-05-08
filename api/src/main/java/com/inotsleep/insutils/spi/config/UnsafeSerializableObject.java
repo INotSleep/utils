@@ -1,23 +1,23 @@
 package com.inotsleep.insutils.spi.config;
 
+import com.inotsleep.insutils.api.yaml.YamlMappingNode;
 import org.jetbrains.annotations.ApiStatus;
-import org.snakeyaml.engine.v2.nodes.*;
 
 public abstract class UnsafeSerializableObject {
 
     public UnsafeSerializableObject() {}
 
     @ApiStatus.Experimental
-    public abstract void beforeDeserialization(MappingNode node);
+    public abstract void beforeDeserialization(YamlMappingNode node);
 
     @ApiStatus.Experimental
-    public abstract void afterDeserialization(MappingNode node);
+    public abstract void afterDeserialization(YamlMappingNode node);
 
     @ApiStatus.Experimental
-    public abstract void beforeSerialization(MappingNode node);
+    public abstract void beforeSerialization(YamlMappingNode node);
 
     @ApiStatus.Experimental
-    public abstract void afterSerialization(MappingNode node);
+    public abstract void afterSerialization(YamlMappingNode node);
 
 
 }
