@@ -1,20 +1,13 @@
 package com.inotsleep.insutils.api.logging;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.ServiceLoader;
 
 public interface LoggingManager {
-    AtomicReference<LoggingManager> instance = new AtomicReference<>();
-
-    static void setInstance(LoggingManager instance) {
-        if (instance == null) {
-            throw new NullPointerException("instance");
-        }
-        if (!LoggingManager.instance.compareAndSet(null, instance)) {
-            throw new IllegalStateException("LoggingManager instance already set");
-        }
-    }
     static LoggingManager getInstance() {
-        return instance.get();
+        return ServiceLoader
+                .load(LoggingManager.class, LoggingManager.class.getClassLoader())
+                .findFirst()
+                .orElseThrow();
     }
 
     void setLogger(Logger logger);

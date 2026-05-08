@@ -3,22 +3,14 @@ package com.inotsleep.insutils.api.config;
 import com.inotsleep.insutils.api.config.codecs.Codec;
 import com.inotsleep.insutils.spi.config.UnsafeConfig;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.ServiceLoader;
 
 public interface ConfigHandle {
-    AtomicReference<ConfigHandle> instance = new AtomicReference<>();
-
-    static void setInstance(ConfigHandle instance) {
-        if (instance == null) {
-            throw new NullPointerException("instance");
-        }
-        if (!ConfigHandle.instance.compareAndSet(null, instance)) {
-            throw new IllegalStateException("ConfigHandle instance already set");
-        }
-    }
-
     static ConfigHandle getInstance() {
-        return ConfigHandle.instance.get();
+        return ServiceLoader
+                .load(ConfigHandle.class, ConfigHandle.class.getClassLoader())
+                .findFirst()
+                .orElseThrow();
     }
 
     void saveConfig(UnsafeConfig config);

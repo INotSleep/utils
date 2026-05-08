@@ -1,8 +1,8 @@
 package com.inotsleep.insutils.internal.plugin;
 
 import com.inotsleep.insutils.api.config.INSUtilsConfig;
-import com.inotsleep.insutils.internal.HandlerManager;
 import com.inotsleep.insutils.internal.config.INSUtilsConfigImpl;
+import com.inotsleep.insutils.internal.config.codecs.BukkitCodecs;
 import com.inotsleep.insutils.spi.plugin.BukkitPlugin;
 import com.inotsleep.insutils.api.plugin.INSBukkitPlugin;
 import com.inotsleep.insutils.api.plugin.INSBungeePlugin;
@@ -109,6 +109,6 @@ public class INSUtilsBukkitPlugin extends BukkitPlugin implements INSUtils {
     }
 
     static {
-        HandlerManager.loadHandlers();
+        BukkitCodecs.registerConfigCodecs();
     }
 }

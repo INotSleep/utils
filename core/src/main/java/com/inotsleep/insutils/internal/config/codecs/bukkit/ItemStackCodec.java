@@ -1,4 +1,4 @@
-package com.inotsleep.insutils.internal.config.codecs;
+package com.inotsleep.insutils.internal.config.codecs.bukkit;
 
 import com.google.gson.*;
 import com.inotsleep.insutils.api.config.codecs.Codec;

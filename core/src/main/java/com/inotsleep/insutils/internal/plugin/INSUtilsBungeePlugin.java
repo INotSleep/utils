@@ -1,15 +1,15 @@
 package com.inotsleep.insutils.internal.plugin;
 
 import com.inotsleep.insutils.api.config.INSUtilsConfig;
-import com.inotsleep.insutils.internal.HandlerManager;
 import com.inotsleep.insutils.internal.config.INSUtilsConfigImpl;
+import com.inotsleep.insutils.internal.config.codecs.BukkitCodecs;
+import com.inotsleep.insutils.internal.config.codecs.BungeeCodecs;
 import com.inotsleep.insutils.spi.plugin.BungeePlugin;
 import com.inotsleep.insutils.api.plugin.INSBukkitPlugin;
 import com.inotsleep.insutils.api.plugin.INSBungeePlugin;
 import com.inotsleep.insutils.api.INSUtils;
 import com.inotsleep.insutils.api.i18n.I18n;
 import com.inotsleep.insutils.api.logging.LoggingManager;
-import com.inotsleep.insutils.internal.logging.LoggingManagerImpl;
 import com.inotsleep.insutils.internal.i18n.I18nImpl;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import org.jetbrains.annotations.NotNull;
@@ -107,6 +107,6 @@ public class INSUtilsBungeePlugin extends BungeePlugin implements INSUtils {
     }
 
     static {
-        HandlerManager.loadHandlers();
+        BungeeCodecs.registerConfigCodecs();
     }
 }
