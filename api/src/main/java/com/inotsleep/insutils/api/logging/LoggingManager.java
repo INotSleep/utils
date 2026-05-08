@@ -1,13 +1,10 @@
 package com.inotsleep.insutils.api.logging;
 
-import java.util.ServiceLoader;
+import com.inotsleep.insutils.api.service.ServiceManager;
 
 public interface LoggingManager {
     static LoggingManager getInstance() {
-        return ServiceLoader
-                .load(LoggingManager.class, LoggingManager.class.getClassLoader())
-                .findFirst()
-                .orElseThrow();
+        return ServiceManager.require(LoggingManager.class);
     }
 
     void setLogger(Logger logger);

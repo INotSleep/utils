@@ -2,7 +2,6 @@ package com.inotsleep.insutils.internal.plugin;
 
 import com.inotsleep.insutils.api.config.INSUtilsConfig;
 import com.inotsleep.insutils.internal.config.INSUtilsConfigImpl;
-import com.inotsleep.insutils.internal.config.codecs.BukkitCodecs;
 import com.inotsleep.insutils.internal.config.codecs.BungeeCodecs;
 import com.inotsleep.insutils.spi.plugin.BungeePlugin;
 import com.inotsleep.insutils.api.plugin.INSBukkitPlugin;
@@ -11,6 +10,7 @@ import com.inotsleep.insutils.api.INSUtils;
 import com.inotsleep.insutils.api.i18n.I18n;
 import com.inotsleep.insutils.api.logging.LoggingManager;
 import com.inotsleep.insutils.internal.i18n.I18nImpl;
+import com.inotsleep.insutils.internal.service.ServiceBootstrap;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,9 +47,16 @@ public class INSUtilsBungeePlugin extends BungeePlugin implements INSUtils {
     );
 
     @Override
+    public void onLoad() {
+        ServiceBootstrap.registerCommonServices();
+        super.onLoad();
+    }
+
+    @Override
     public void doLoad() {
         instance = this;
         INSUtils.setInstance(this);
+        BungeeCodecs.registerConfigCodecs();
 
         insUtilsConfig = new INSUtilsConfigImpl();
         insUtilsConfig.reload();
@@ -106,7 +113,4 @@ public class INSUtilsBungeePlugin extends BungeePlugin implements INSUtils {
         return insUtilsConfig;
     }
 
-    static {
-        BungeeCodecs.registerConfigCodecs();
-    }
 }

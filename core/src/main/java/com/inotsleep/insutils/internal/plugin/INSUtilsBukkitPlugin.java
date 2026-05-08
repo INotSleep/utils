@@ -12,6 +12,7 @@ import com.inotsleep.insutils.api.i18n.I18n;
 import com.inotsleep.insutils.internal.i18n.I18nImpl;
 import com.inotsleep.insutils.internal.listeners.EventListener;
 import com.inotsleep.insutils.api.logging.LoggingManager;
+import com.inotsleep.insutils.internal.service.BukkitServiceBootstrap;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
@@ -48,10 +49,17 @@ public class INSUtilsBukkitPlugin extends BukkitPlugin implements INSUtils {
     );
 
     @Override
+    public void onLoad() {
+        BukkitServiceBootstrap.register(this);
+        super.onLoad();
+    }
+
+    @Override
     public void doLoad() {
         instance = this;
         INSUtils.setInstance(this);
         Initializer.tryToInitialize();
+        BukkitCodecs.registerConfigCodecs();
 
         insUtilsConfig = new INSUtilsConfigImpl();
         insUtilsConfig.reload();
@@ -108,7 +116,4 @@ public class INSUtilsBukkitPlugin extends BukkitPlugin implements INSUtils {
         return insUtilsConfig;
     }
 
-    static {
-        BukkitCodecs.registerConfigCodecs();
-    }
 }

@@ -1,28 +1,21 @@
 package com.inotsleep.insutils.api.i18n;
 
 import com.inotsleep.insutils.api.hooks.holograms.HologramAPIHolder;
+import com.inotsleep.insutils.api.service.ServiceManager;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public interface I18n {
-    AtomicReference<I18n> instance = new AtomicReference<>();
-
     static void setInstance(I18n instance) {
-        if (instance == null) {
-            throw new NullPointerException("instance");
-        }
-        if (!I18n.instance.compareAndSet(null, instance)) {
-            throw new IllegalStateException("I18n instance already set");
-        }
+        ServiceManager.register(I18n.class, instance);
     }
 
     static I18n getInstance() {
-        return instance.get();
+        return ServiceManager.get(I18n.class);
     }
 
     void shutdown();

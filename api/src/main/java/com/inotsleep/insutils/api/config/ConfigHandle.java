@@ -1,16 +1,12 @@
 package com.inotsleep.insutils.api.config;
 
 import com.inotsleep.insutils.api.config.codecs.Codec;
+import com.inotsleep.insutils.api.service.ServiceManager;
 import com.inotsleep.insutils.spi.config.UnsafeConfig;
-
-import java.util.ServiceLoader;
 
 public interface ConfigHandle {
     static ConfigHandle getInstance() {
-        return ServiceLoader
-                .load(ConfigHandle.class, ConfigHandle.class.getClassLoader())
-                .findFirst()
-                .orElseThrow();
+        return ServiceManager.require(ConfigHandle.class);
     }
 
     void saveConfig(UnsafeConfig config);
