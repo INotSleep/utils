@@ -2,7 +2,8 @@ package com.inotsleep.insutils.internal.config;
 
 import com.inotsleep.insutils.api.config.*;
 import com.inotsleep.insutils.api.config.codecs.Codec;
-import com.inotsleep.insutils.api.yaml.YamlMappingNode;
+import com.inotsleep.insutils.api.yaml.*;
+import com.inotsleep.insutils.internal.config.codecs.DefaultCodecs;
 import com.inotsleep.insutils.spi.config.UnsafeConfig;
 import com.inotsleep.insutils.spi.config.UnsafeSerializableObject;
 import com.inotsleep.insutils.api.logging.LoggingManager;
@@ -32,6 +33,7 @@ public class ConfigHandleImpl implements ConfigHandle {
 
     public ConfigHandleImpl() {
         registry = new CodecRegistry();
+        DefaultCodecs.register(registry, createCodecContext());
     }
 
     private void serialize(UnsafeSerializableObject target, MappingNode node) {
@@ -178,6 +180,35 @@ public class ConfigHandleImpl implements ConfigHandle {
         return source == null ? new ArrayList<>() : new ArrayList<>(source);
     }
 
+    private DefaultCodecs.CodecContext createCodecContext() {
+        return new DefaultCodecs.CodecContext() {
+            @Override
+            public YamlNode serialize(Type type, Object value) {
+                return ConfigHandleImpl.this.serialize(type, value);
+            }
+
+            @Override
+            public Object deserialize(Type type, YamlNode node) {
+                return ConfigHandleImpl.this.deserialize(type, node);
+            }
+
+            @Override
+            public YamlScalarNode serializeMapKey(Type type, Object value) {
+                return ConfigHandleImpl.this.serializeMapKey(type, value);
+            }
+
+            @Override
+            public YamlMappingNode serializeObject(UnsafeSerializableObject value) {
+                return ConfigHandleImpl.this.serializeObjectNode(value);
+            }
+
+            @Override
+            public <T extends UnsafeSerializableObject> T deserializeObject(Class<T> type, YamlMappingNode node) {
+                return ConfigHandleImpl.this.deserializeObjectNode(type, node);
+            }
+        };
+    }
+
     private void processFieldComments(Field field, Node keyNode, Node valueNode) {
         Comments comments = field.getAnnotation(Comments.class);
         List<Comment> commentList = new ArrayList<>();
@@ -223,59 +254,48 @@ public class ConfigHandleImpl implements ConfigHandle {
     }
 
     private Node serializeValue(Type type, Object value) {
-        switch (value) {
-            case UnsafeSerializableObject serializableObject -> {
-                MappingNode childNode = new MappingNode(Tag.MAP, new ArrayList<>(), FlowStyle.AUTO);
-                serialize(serializableObject, childNode);
-                return childNode;
-            }
-            case Map<?, ?> map -> {
-                return serializeMap(type, map);
-            }
-            case Collection<?> collection -> {
-                return serializeCollection(type, collection);
-            }
-            case null, default -> {
-                Optional<Codec<?>> optionalCodec = registry.find(type);
-                if (optionalCodec.isPresent()) {
-                    return YamlNodeConverter.toSnakeNode(optionalCodec.get().serializeAny(value));
-                }
-                return serializePrimitive(value, true);
-            }
+        if (value == null) {
+            return serializeFallbackScalar(null, true);
         }
+
+        Type resolvedType = resolveSerializationType(type, value);
+        Optional<Codec<?>> optionalCodec = registry.find(resolvedType);
+        if (optionalCodec.isPresent()) {
+            return YamlNodeConverter.toSnakeNode(optionalCodec.get().serialize(TypeKey.of(resolvedType), value));
+        }
+
+        return serializeFallbackScalar(value, true);
     }
 
-    private MappingNode serializeMap(Type type, Map < ? , ? > map) {
-        List < NodeTuple > tuples = new ArrayList < > ();
-        for (Map.Entry < ? , ? > entry : map.entrySet()) {
-            Node keyNode = serializePrimitive(entry.getKey(), false);
-
-            Node valNode = serializeValue(type, entry.getValue());
-
-            NodeTuple tuple = new NodeTuple(keyNode, valNode);
-            tuples.add(tuple);
+    private YamlScalarNode serializeMapKey(Type type, Object value) {
+        YamlNode keyNode = serialize(resolveSerializationType(type, value), value);
+        if (keyNode instanceof YamlScalarNode scalarNode) {
+            if (scalarNode.getScalarType() == YamlScalarType.DOUBLE_QUOTED &&
+                    scalarNode.getValue().indexOf('\n') < 0 &&
+                    scalarNode.getValue().indexOf('\r') < 0) {
+                return YamlNodes.scalar(scalarNode.getValue(), YamlScalarType.PLAIN);
+            }
+            return scalarNode;
         }
-        return new MappingNode(Tag.MAP, tuples, FlowStyle.AUTO);
+
+        LoggingManager.warn("Unsupported map key type: " + (value == null ? "null" : value.getClass().getName()) + ". Will treat as string.");
+        return (YamlScalarNode) YamlNodeConverter.toApiNode(serializeFallbackScalar(value, false));
     }
 
-    private SequenceNode serializeCollection(Type type, Collection < ? > collection) {
-        List < Node > nodes = new ArrayList < > ();
-        for (Object item: collection) {
-            nodes.add(serializeValue(type, item));
+    private Type resolveSerializationType(Type type, Object value) {
+        Type normalizedType = normalizeKnownType(type);
+        if (normalizedType == Object.class && value != null) {
+            return value.getClass();
         }
-        return new SequenceNode(Tag.SEQ, nodes, FlowStyle.AUTO);
+        return normalizedType;
     }
 
-    public ScalarNode serializePrimitive(Object value, boolean quoteStrings) {
+    private ScalarNode serializeFallbackScalar(Object value, boolean quoteStrings) {
         Tag tag;
         ScalarStyle style;
 
         if (value == null) {
             return new ScalarNode(Tag.NULL, "null", ScalarStyle.PLAIN);
-        }
-
-        if (value instanceof Enum<?> e) {
-            return new ScalarNode(Tag.STR, e.name(), ScalarStyle.DOUBLE_QUOTED);
         }
 
         if (value instanceof String || value instanceof Character) {
@@ -312,56 +332,17 @@ public class ConfigHandleImpl implements ConfigHandle {
     }
 
     private Object deserializeValue(Type type, Node node, String key) {
+        type = normalizeKnownType(type);
         Class<?> clazz = TypeKey.rawClassOf(type);
 
-        if (UnsafeSerializableObject.class.isAssignableFrom(clazz)) {
-            if (!(node instanceof MappingNode)) {
-                LoggingManager.warn("Expected MappingNode for object '" + key + "' but found " + node.getNodeType());
-                return null;
-            }
-            return deserializeObject((MappingNode) node, clazz, key);
-        }
-
-        if (Map.class.isAssignableFrom(clazz)) {
-            if (!(node instanceof MappingNode)) {
-                LoggingManager.warn("Expected MappingNode for map '" + key + "' but found " + node.getNodeType());
-                return null;
-            }
-            return deserializeMap((MappingNode) node, type);
-        }
-
-        if (Collection.class.isAssignableFrom(clazz)) {
-            if (!(node instanceof SequenceNode)) {
-                LoggingManager.warn("Expected SequenceNode for collection '" + key + "' but found " + node.getNodeType());
-                return null;
-            }
-            return deserializeCollection((SequenceNode) node, type);
-        }
-
-        if (clazz.isEnum()) {
-            if (!(node instanceof ScalarNode)) {
-                LoggingManager.warn("Expected ScalarNode for enum '" + key + "' but found " + node.getNodeType());
-                return null;
-            }
-            return deserializeEnum(clazz, (ScalarNode) node);
-        }
-
-        if (clazz.isPrimitive() ||
-                Number.class.isAssignableFrom(clazz) ||
-                String.class.isAssignableFrom(clazz) ||
-                Character.class.isAssignableFrom(clazz) ||
-                Boolean.class.isAssignableFrom(clazz)
-        ) {
-            if (!(node instanceof ScalarNode)) {
-                LoggingManager.warn("Expected ScalarNode for primitive '" + key + "' but found " + node.getNodeType());
-                return null;
-            }
-            return deserializePrimitive(clazz, (ScalarNode) node);
-        }
-
-        Optional<com.inotsleep.insutils.api.config.codecs.Codec<?>> optionalCodec = registry.find(type);
+        Optional<Codec<?>> optionalCodec = registry.find(type);
         if (optionalCodec.isPresent()) {
-            return optionalCodec.get().deserializeAny(YamlNodeConverter.toApiNode(node));
+            try {
+                return optionalCodec.get().deserialize(TypeKey.of(type), YamlNodeConverter.toApiNode(node));
+            } catch (RuntimeException exception) {
+                LoggingManager.warn("Failed to deserialize '" + key + "' as " + clazz.getName() + ": " + exception.getMessage());
+                return null;
+            }
         }
 
         LoggingManager.warn("Unsupported field type: " + clazz.getName() + " (" + key + "). Will treat as string.");
@@ -371,110 +352,25 @@ public class ConfigHandleImpl implements ConfigHandle {
         return null;
     }
 
-    private UnsafeSerializableObject deserializeObject(MappingNode node, Class < ? > clazz, String key) {
+    private YamlMappingNode serializeObjectNode(UnsafeSerializableObject value) {
+        MappingNode node = new MappingNode(Tag.MAP, new ArrayList<>(), FlowStyle.AUTO);
+        serialize(value, node);
+        return YamlNodeConverter.toApiMappingNode(node);
+    }
+
+    private <T extends UnsafeSerializableObject> T deserializeObjectNode(Class<T> clazz, YamlMappingNode node) {
         try {
-            UnsafeSerializableObject obj = (UnsafeSerializableObject) clazz.getDeclaredConstructor().newInstance();
-            deserialize(obj, node);
+            T obj = clazz.getDeclaredConstructor().newInstance();
+            deserialize(obj, YamlNodeConverter.toSnakeMappingNode(node));
             return obj;
         } catch (Exception e) {
-            LoggingManager.error("Failed to deserialize object for '" + key + "'", e);
+            LoggingManager.error("Failed to deserialize object for '" + clazz.getName() + "'", e);
         }
         return null;
     }
 
-    private Map<Object, Object> deserializeMap(MappingNode node, Type genericType) {
-        Type keyType = null;
-        Type valType = null;
-
-        if (genericType instanceof ParameterizedType pt) {
-            Type kType = pt.getActualTypeArguments()[0];
-            Type vType = pt.getActualTypeArguments()[1];
-
-            keyType = kType;
-            valType = vType;
-        }
-
-        Map<Object, Object> map = new LinkedHashMap<>();
-        for (NodeTuple tuple : node.getValue()) {
-            Node kNode = tuple.getKeyNode();
-            Node vNode = tuple.getValueNode();
-
-            Object mapKey = deserializeValue(keyType, kNode, "map-key");
-            Object mapValue = deserializeValue(valType, vNode, "map-value");
-            map.put(mapKey, mapValue);
-        }
-
-        return map;
-    }
-
-    private Collection < Object > deserializeCollection(SequenceNode node, Type genericType) {
-        Type elementGenType = null;
-
-        if (genericType instanceof ParameterizedType pt) {
-            elementGenType = pt.getActualTypeArguments()[0];
-        }
-
-        Collection < Object > collection;
-        collection = new ArrayList < > ();
-
-        for (Node itemNode: node.getValue()) {
-            Object item = deserializeValue(elementGenType, itemNode, "item");
-            collection.add(item);
-        }
-        return collection;
-    }
-
-    @SuppressWarnings({
-            "rawtypes",
-            "unchecked"
-    })
-    private Object deserializeEnum(Class < ? > enumType, ScalarNode node) {
-        String value = node.getValue();
-        try {
-            return Enum.valueOf((Class < Enum > ) enumType, value);
-        } catch (IllegalArgumentException ex) {
-            LoggingManager.warn("Invalid enum value '" + value + "' for enum " + enumType.getName());
-            return null;
-        }
-    }
-
-    private Object deserializePrimitive(Class < ? > type, ScalarNode node) {
-        String value = node.getValue();
-        if (type.equals(String.class)) {
-            return value;
-        }
-        if (type.equals(char.class) || type.equals(Character.class)) {
-            return value.isEmpty() ? '\0' : value.charAt(0);
-        }
-        if (type.equals(boolean.class) || type.equals(Boolean.class)) {
-            return Boolean.parseBoolean(value);
-        }
-
-        try {
-            if (type.equals(int.class) || type.equals(Integer.class)) {
-                return Integer.parseInt(value);
-            }
-            if (type.equals(long.class) || type.equals(Long.class)) {
-                return Long.parseLong(value);
-            }
-            if (type.equals(short.class) || type.equals(Short.class)) {
-                return Short.parseShort(value);
-            }
-            if (type.equals(byte.class) || type.equals(Byte.class)) {
-                return Byte.parseByte(value);
-            }
-            if (type.equals(float.class) || type.equals(Float.class)) {
-                return Float.parseFloat(value);
-            }
-            if (type.equals(double.class) || type.equals(Double.class)) {
-                return Double.parseDouble(value);
-            }
-        } catch (NumberFormatException e) {
-            LoggingManager.warn("Invalid numeric value '" + value + "' for type " + type.getName());
-            return null;
-        }
-
-        return null;
+    private Type normalizeKnownType(Type type) {
+        return type == null ? Object.class : type;
     }
     private CommentType toSnakeYmlCommentType(com.inotsleep.insutils.api.config.CommentType commentType) {
         return switch (commentType) {
@@ -594,5 +490,16 @@ public class ConfigHandleImpl implements ConfigHandle {
     @Override
     public <T> void registerCodec(Codec<T> codec) {
         registry.register(codec);
+    }
+
+    @Override
+    public <T> YamlNode serialize(TypeKey<T> type, T value) {
+        return YamlNodeConverter.toApiNode(serializeValue(type.type(), value));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T deserialize(TypeKey<T> type, YamlNode node) {
+        return (T) deserializeValue(type.type(), YamlNodeConverter.toSnakeNode(node), "root");
     }
 }

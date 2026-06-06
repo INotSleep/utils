@@ -8,6 +8,14 @@ public interface Codec<T> {
     T deserialize(YamlNode node);
     TypeKey<T> key();
 
+    default YamlNode serialize(TypeKey<?> type, Object value) {
+        return serializeAny(value);
+    }
+
+    default Object deserialize(TypeKey<?> type, YamlNode node) {
+        return deserializeAny(node);
+    }
+
     @SuppressWarnings("unchecked")
     default YamlNode serializeAny(Object value) {
         return serialize((T) value);

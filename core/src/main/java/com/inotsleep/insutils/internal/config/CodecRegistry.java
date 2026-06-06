@@ -2,6 +2,7 @@ package com.inotsleep.insutils.internal.config;
 
 import com.inotsleep.insutils.api.config.codecs.Codec;
 import com.inotsleep.insutils.api.config.TypeKey;
+import com.inotsleep.insutils.internal.config.codecs.DefaultCodecs;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -52,6 +53,7 @@ public final class CodecRegistry {
         Objects.requireNonNull(key, "key");
 
         Type type = normalizeType(key.type());
+        Class<T> raw = (Class<T>) rawClassOf(type);
 
         // 1) exact match
         Codec<?> exact = exactByType.get(type);
@@ -62,8 +64,8 @@ public final class CodecRegistry {
         // 2) parameterized -> raw fallback
         if (type instanceof ParameterizedType pt) {
             Type rt = pt.getRawType();
-            if (rt instanceof Class<?> raw) {
-                Optional<Codec<T>> byHierarchy = findByClassHierarchy((Class<T>) normalizeClass(raw));
+            if (rt instanceof Class<?> rawType) {
+                Optional<Codec<T>> byHierarchy = findByClassHierarchy((Class<T>) normalizeClass(rawType));
                 if (byHierarchy.isPresent()) {
                     return byHierarchy;
                 }
@@ -71,8 +73,16 @@ public final class CodecRegistry {
         }
 
         // 3) class hierarchy fallback
-        Class<T> raw = (Class<T>) rawClassOf(type);
-        return findByClassHierarchy(raw);
+        Optional<Codec<T>> byHierarchy = findByClassHierarchy(raw);
+        if (byHierarchy.isPresent()) {
+            return byHierarchy;
+        }
+
+        if (raw.isEnum()) {
+            return Optional.of(cast(DefaultCodecs.enumCodec((Class<? extends Enum>) raw)));
+        }
+
+        return Optional.empty();
     }
 
     public <T> Codec<T> require(TypeKey<T> key) {

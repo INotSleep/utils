@@ -36,6 +36,8 @@ configurations {
 
 dependencies {
     shadow project(path: ":api", configuration: "shadow")
+    testImplementation project(":api")
+    testImplementation "org.snakeyaml:snakeyaml-engine:2.9"
     shadow "org.bstats:bstats-bukkit:3.1.0"
     shadow "org.bstats:bstats-bungeecord:3.1.0"
     shadow "org.snakeyaml:snakeyaml-engine:2.9"
@@ -49,6 +51,10 @@ dependencies {
     compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
     compileOnly "com.google.code.gson:gson:2.13.2"
     compileOnly 'net.md-5:bungeecord-api:1.21-R0.5-SNAPSHOT'
+
+    testImplementation platform("org.junit:junit-bom:5.12.2")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
 shadowJar {
@@ -64,6 +70,13 @@ shadowJar {
 
 tasks.named("build") {
     dependsOn(shadowJar)
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
 
 processResources {

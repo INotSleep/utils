@@ -49,25 +49,125 @@ jobs:
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
           echo "classifier=$CLASSIFIER" >> "$GITHUB_OUTPUT"
 
+      - name: Test
+        env:
+          CI: "true"
+          GITHUB_REF: ${{ github.ref }}
+        run: ./gradlew --no-daemon clean core:test
+
       - name: Build
         env:
           CI: "true"
           GITHUB_REF: ${{ github.ref }}
-        run: ./gradlew --no-daemon clean build shadowJar -PbuildClassifier=${{ steps.vars.outputs.classifier }}
+        run: ./gradlew --no-daemon assemble :core:shadowJar shadowJar :api:shadowJar generatePomFileForShadowPublication :api:generatePomFileForShadowPublication -PbuildClassifier=${{ steps.vars.outputs.classifier }}
 
       - name: Publish to Nexus
+        if: github.event_name == 'push'
         env:
           NEXUS_USER: ${{ secrets.NEXUS_USER }}
           NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           CI: "true"
           GITHUB_REF: ${{ github.ref }}
-        run: ./gradlew --no-daemon publish -PbuildClassifier=${{ steps.vars.outputs.classifier }}
+        run: |
+          if [ -z "$NEXUS_USER" ] || [ -z "$NEXUS_PASSWORD" ]; then
+            echo "Skipping publish: Nexus credentials are not configured."
+            exit 0
+          fi
+          ./gradlew --no-daemon publish -PbuildClassifier=${{ steps.vars.outputs.classifier }}
+
+      - name: Prepare artifact bundle
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp build/libs/INSUtils-*.jar dist/
+          cp api/build/libs/INSUtils-api-*.jar dist/
+          cp build/publications/shadow/pom-default.xml dist/insutils-plugin.pom
+          cp api/build/publications/shadow/pom-default.xml dist/insutils-api.pom
+          sha256sum dist/* > dist/SHA256SUMS
+
+      - name: Generate usage instructions
+        run: |
+          set -euo pipefail
+
+          GROUP="com.inotsleep"
+          REPO_URL="https://nexus.inotsleep.com/repository/maven-public/"
+          CLASSIFIER="${{ steps.vars.outputs.classifier }}"
+
+          PLUGIN_VERSION=$(grep -oPm1 '(?<=<version>)[^<]+' build/publications/shadow/pom-default.xml)
+          API_VERSION=$(grep -oPm1 '(?<=<version>)[^<]+' api/build/publications/shadow/pom-default.xml)
+
+          cat <<EOF | tee -a "$GITHUB_STEP_SUMMARY"
+          ## INSUtils build usage
+
+          ### Repository
+
+          **Gradle**
+          \`\`\`gradle
+          repositories {
+              maven { url "$REPO_URL" }
+          }
+          \`\`\`
+
+          **Maven**
+          \`\`\`xml
+          <repositories>
+            <repository>
+              <id>inotsleep-nexus</id>
+              <url>$REPO_URL</url>
+            </repository>
+          </repositories>
+          \`\`\`
+
+          ### Plugin Artifact
+
+          Coordinates: \`$GROUP:insutils-plugin:$PLUGIN_VERSION:$CLASSIFIER\`
+
+          **Gradle**
+          \`\`\`gradle
+          dependencies {
+              compileOnly("$GROUP:insutils-plugin:$PLUGIN_VERSION:$CLASSIFIER")
+          }
+          \`\`\`
+
+          **Maven**
+          \`\`\`xml
+          <dependency>
+            <groupId>$GROUP</groupId>
+            <artifactId>insutils-plugin</artifactId>
+            <version>$PLUGIN_VERSION</version>
+            <classifier>$CLASSIFIER</classifier>
+            <scope>provided</scope>
+          </dependency>
+          \`\`\`
+
+          ### API Artifact
+
+          Coordinates: \`$GROUP:insutils-api:$API_VERSION:$CLASSIFIER\`
+
+          **Gradle**
+          \`\`\`gradle
+          dependencies {
+              compileOnly("$GROUP:insutils-api:$API_VERSION:$CLASSIFIER")
+          }
+          \`\`\`
+
+          **Maven**
+          \`\`\`xml
+          <dependency>
+            <groupId>$GROUP</groupId>
+            <artifactId>insutils-api</artifactId>
+            <version>$API_VERSION</version>
+            <classifier>$CLASSIFIER</classifier>
+            <scope>provided</scope>
+          </dependency>
+          \`\`\`
+          EOF
 
       - name: Upload JARs
         uses: actions/upload-artifact@v4
         with:
           name: INSUtils-${{ steps.vars.outputs.classifier }}
-          path: build/libs/*.jar
+          path: dist/*
           if-no-files-found: error
 
 #      - name: Generate usage instructions (Gradle/Maven)
