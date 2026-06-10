@@ -118,29 +118,7 @@ jobs:
           </repositories>
           \`\`\`
 
-          ### Plugin Artifact
-
-          Coordinates: \`$GROUP:insutils-plugin:$PLUGIN_VERSION:$CLASSIFIER\`
-
-          **Gradle**
-          \`\`\`gradle
-          dependencies {
-              compileOnly("$GROUP:insutils-plugin:$PLUGIN_VERSION:$CLASSIFIER")
-          }
-          \`\`\`
-
-          **Maven**
-          \`\`\`xml
-          <dependency>
-            <groupId>$GROUP</groupId>
-            <artifactId>insutils-plugin</artifactId>
-            <version>$PLUGIN_VERSION</version>
-            <classifier>$CLASSIFIER</classifier>
-            <scope>provided</scope>
-          </dependency>
-          \`\`\`
-
-          ### API Artifact
+          ### API Dependency
 
           Coordinates: \`$GROUP:insutils-api:$API_VERSION:$CLASSIFIER\`
 
@@ -161,6 +139,11 @@ jobs:
             <scope>provided</scope>
           </dependency>
           \`\`\`
+
+          ### Plugin Artifact
+
+          Plugin build artifact is also published separately as:
+          \`$GROUP:insutils-plugin:$PLUGIN_VERSION:$CLASSIFIER\`
           EOF
 
       - name: Upload JARs

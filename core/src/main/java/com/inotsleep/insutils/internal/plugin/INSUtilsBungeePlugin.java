@@ -56,10 +56,11 @@ public class INSUtilsBungeePlugin extends BungeePlugin implements INSUtils {
     public void doLoad() {
         instance = this;
         INSUtils.setInstance(this);
-        BungeeCodecs.registerConfigCodecs();
 
         insUtilsConfig = new INSUtilsConfigImpl();
         insUtilsConfig.reload();
+
+        BungeeCodecs.registerConfigCodecs();
 
         bungeePlugins = new ArrayList<>();
 

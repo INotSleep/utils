@@ -58,11 +58,12 @@ public class INSUtilsBukkitPlugin extends BukkitPlugin implements INSUtils {
     public void doLoad() {
         instance = this;
         INSUtils.setInstance(this);
-        Initializer.tryToInitialize();
-        BukkitCodecs.registerConfigCodecs();
 
         insUtilsConfig = new INSUtilsConfigImpl();
         insUtilsConfig.reload();
+
+        BukkitCodecs.registerConfigCodecs();
+        Initializer.tryToInitialize();
 
         bukkitPlugins = new ArrayList<>();
         I18nImpl.init(getInstance());
